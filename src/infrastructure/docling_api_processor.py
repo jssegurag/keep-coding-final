@@ -22,6 +22,7 @@ class DoclingApiProcessor(IDocumentProcessor):
         retry=retry_if_exception_type((requests.exceptions.RequestException, requests.exceptions.HTTPError)),
         reraise=True
     )
+    @timing_decorator
     def _make_api_call(self, files: Dict, data: List) -> requests.Response:
         """
         Realiza la llamada a la API con reintentos automáticos.

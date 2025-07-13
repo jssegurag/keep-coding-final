@@ -1,5 +1,20 @@
 import time
 import functools
+import logging
+import sys
+
+# Configuración global de logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("output.log", mode='a', encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)  # Opcional: también muestra en consola
+    ]
+)
+
+# Redefinir print para que use logging.info
+print = lambda *args, **kwargs: logging.info(' '.join(str(a) for a in args))
 
 def timing_decorator(func):
     """
@@ -15,5 +30,5 @@ def timing_decorator(func):
         finally:
             end_time = time.perf_counter()
             run_time = end_time - start_time
-            print(f"Finished '{func.__name__}' in {run_time:.4f} secs")
+            logging.info(f"Finished '{func.__name__}' in {run_time:.4f} secs")
     return wrapper 
