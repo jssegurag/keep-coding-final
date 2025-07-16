@@ -18,7 +18,7 @@ GOOGLE_MODEL: Final[str] = "gemini-2.0-flash-lite"  # Modelo económico para MVP
 
 # Configuración de embeddings
 EMBEDDING_MODEL: Final[str] = "paraphrase-multilingual-mpnet-base-v2"  # Modelo optimizado para textos legales
-EMBEDDING_DIMENSIONS: Final[int] = 512
+EMBEDDING_DIMENSIONS: Final[int] = 768
 
 # Configuración de chunking
 CHUNK_SIZE: Final[int] = 512

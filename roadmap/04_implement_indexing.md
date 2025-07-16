@@ -333,25 +333,25 @@ from config.settings import CSV_METADATA_PATH, JSON_DOCS_PATH
 import pandas as pd
 
 def main():
-    print("🚀 Iniciando indexación de documentos...")
+    print("Iniciando indexación de documentos...")
     
     # Crear indexador
     indexer = ChromaIndexer()
     
     # Verificar archivos de entrada
     if not os.path.exists(CSV_METADATA_PATH):
-        print(f"❌ No se encontró el archivo CSV: {CSV_METADATA_PATH}")
+        print(f"No se encontró el archivo CSV: {CSV_METADATA_PATH}")
         return
     
     if not os.path.exists(JSON_DOCS_PATH):
-        print(f"❌ No se encontró el directorio JSON: {JSON_DOCS_PATH}")
+        print(f"No se encontró el directorio JSON: {JSON_DOCS_PATH}")
         return
     
     # Indexar documentos
     result = indexer.load_and_index_from_csv()
     
     if result.get('success', False):
-        print(f"✅ Indexación completada:")
+        print(f"Indexación completada:")
         print(f"   - Documentos totales: {result['total_documents']}")
         print(f"   - Exitosos: {result['successful']}")
         print(f"   - Fallidos: {result['failed']}")
@@ -359,13 +359,13 @@ def main():
         
         # Mostrar estadísticas
         stats = indexer.get_collection_stats()
-        print(f"\n📊 Estadísticas de la colección:")
+        print(f"\nEstadísticas de la colección:")
         print(f"   - Chunks totales: {stats['total_chunks']}")
         print(f"   - Nombre: {stats['collection_name']}")
         print(f"   - Metadatos disponibles: {', '.join(stats['sample_metadata_keys'])}")
         
     else:
-        print(f"❌ Error en indexación: {result.get('error', 'Unknown error')}")
+        print(f"Error en indexación: {result.get('error', 'Unknown error')}")
 
 if __name__ == "__main__":
     main()
@@ -539,7 +539,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.indexing.chroma_indexer import ChromaIndexer
 
 def main():
-    print("🔍 Verificando indexación...")
+    print("Verificando indexación...")
     
     # Crear indexador
     indexer = ChromaIndexer()
@@ -548,10 +548,10 @@ def main():
     stats = indexer.get_collection_stats()
     
     if 'error' in stats:
-        print(f"❌ Error obteniendo estadísticas: {stats['error']}")
+        print(f"Error obteniendo estadísticas: {stats['error']}")
         return
     
-    print(f"📊 Estadísticas de la colección:")
+    print(f"Estadísticas de la colección:")
     print(f"   - Chunks totales: {stats['total_chunks']}")
     print(f"   - Colección: {stats['collection_name']}")
     print(f"   - Metadatos disponibles: {', '.join(stats['sample_metadata_keys'])}")
@@ -564,16 +564,16 @@ def main():
         "Juan Pérez"
     ]
     
-    print(f"\n🧪 Probando búsquedas:")
+    print(f"\nProbando búsquedas:")
     for query in test_queries:
         results = indexer.search_similar(query, n_results=3)
         
         if 'error' in results:
-            print(f"   ❌ '{query}': {results['error']}")
+            print(f"   '{query}': {results['error']}")
         else:
-            print(f"   ✅ '{query}': {results['total_found']} resultados")
+            print(f"   '{query}': {results['total_found']} resultados")
     
-    print("\n✅ Verificación completada")
+    print("\nVerificación completada")
 
 if __name__ == "__main__":
     main()
@@ -614,4 +614,24 @@ cat logs/indexing.log
 - La normalización de metadatos es crítica para búsquedas consistentes
 - Los embeddings deben generarse eficientemente para grandes volúmenes
 - La validación debe ejecutarse después de cada indexación
-- Las estadísticas deben mantenerse para monitoreo 
+- Las estadísticas deben mantenerse para monitoreo
+
+## 🔄 Ajustes Realizados
+
+### Coherencia con Pasos Anteriores
+1. **Importaciones corregidas**: Uso de `normalize_text` y `clean_text_for_chunking` desde `src.utils.text_utils`
+2. **Estructura de Chunk**: Compatible con la clase `Chunk` del paso 3
+3. **Validación integrada**: Uso del método `validate_chunks` del `DocumentChunker`
+4. **Logging sin emojis**: Consistente con los estándares establecidos
+
+### Mejoras Implementadas
+1. **Normalización robusta**: Manejo de errores en parsing de fechas y cantidades
+2. **Validación de chunks**: Integración con el sistema de validación del paso 3
+3. **Manejo de errores**: Logging detallado y recuperación de errores
+4. **Tests completos**: Cobertura de todos los métodos principales
+
+### Integración con Sistema Existente
+1. **Configuración centralizada**: Uso de `config.settings`
+2. **Logger consistente**: Mismo patrón de logging que otros módulos
+3. **Estructura de datos**: Compatible con el sistema de chunking implementado
+4. **Rutas de archivos**: Alineadas con la estructura del proyecto 
