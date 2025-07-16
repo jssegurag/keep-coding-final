@@ -81,10 +81,27 @@ class LegalEntityExtractor:
             'court_names': []
         }
         
-        # Patrones para nombres (mayúsculas seguidas de espacios)
-        name_pattern = r'\b[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]+\b'
-        names = re.findall(name_pattern, text)
-        entities['names'] = [n.strip() for n in names if len(n.strip()) > 2]
+        # Patrones para nombres (más flexibles)
+        name_patterns = [
+            r'\b[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]+\b',  # Nombres en mayúsculas
+            r'\b[a-záéíóúñ]+\s+[a-záéíóúñ]+\b',  # Nombres en minúsculas (2 palabras)
+            r'\b[a-záéíóúñ]+\s+[a-záéíóúñ]+\s+[a-záéíóúñ]+\b',  # Nombres en minúsculas (3 palabras)
+        ]
+        
+        names = []
+        for pattern in name_patterns:
+            found_names = re.findall(pattern, text)
+            names.extend([n.strip() for n in found_names if len(n.strip()) > 2])
+        
+        # Filtrar nombres válidos (excluir palabras comunes)
+        common_words = ['que', 'es', 'un', 'una', 'del', 'de', 'la', 'el', 'con', 'por', 'para', 'como', 'cuando', 'donde', 'quien', 'cual', 'cuales', 'este', 'esta', 'estos', 'estas', 'ese', 'esa', 'esos', 'esas', 'aquel', 'aquella', 'aquellos', 'aquellas', 'expediente', 'numero', 'numero', 'informacion', 'tienes', 'hay', 'dame', 'info']
+        valid_names = []
+        for name in names:
+            words = name.lower().split()
+            if len(words) >= 2 and not all(word in common_words for word in words):
+                valid_names.append(name)
+        
+        entities['names'] = valid_names
         
         # Patrones para fechas
         date_patterns = [

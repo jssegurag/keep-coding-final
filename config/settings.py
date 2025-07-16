@@ -16,6 +16,11 @@ load_dotenv()
 GOOGLE_API_KEY: Final[str] = os.getenv("GOOGLE_API_KEY", "")
 GOOGLE_MODEL: Final[str] = "gemini-2.0-flash-lite"  # Modelo económico para MVP
 
+# Configuración de consultas
+QUERY_LOG_FILE: Final[str] = "logs/query.log"
+QUERY_TIMEOUT: Final[int] = 30  # segundos
+MAX_CONTEXT_LENGTH: Final[int] = 4000  # tokens
+
 # Configuración de embeddings
 EMBEDDING_MODEL: Final[str] = "paraphrase-multilingual-mpnet-base-v2"  # Modelo optimizado para textos legales
 EMBEDDING_DIMENSIONS: Final[int] = 768
