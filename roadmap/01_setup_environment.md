@@ -9,6 +9,7 @@ Configurar el entorno de desarrollo completo para el sistema RAG de expedientes 
 ```bash
 # Crear estructura principal
 mkdir -p src/{chunking,indexing,query,testing,utils}
+mkdir -p src/resources/metadata
 mkdir -p data/{raw,processed,chroma_db}
 mkdir -p tests/{unit,integration}
 mkdir -p config
@@ -38,7 +39,7 @@ load_dotenv()
 
 # Configuración de la API
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-GOOGLE_MODEL = "gemini-2.0-flash-exp"
+GOOGLE_MODEL = "gemini-2.0-flash-lite"  # Modelo económico para MVP
 
 # Configuración de embeddings
 EMBEDDING_MODEL = "paraphrase-multilingual-mpnet-base-v2"
@@ -52,14 +53,18 @@ CHUNK_OVERLAP = 50
 CHROMA_PERSIST_DIRECTORY = "data/chroma_db"
 CHROMA_COLLECTION_NAME = "legal_documents"
 
+# Configuración de SQLite para metadatos canónicos
+SQLITE_DB_PATH = "data/legal_docs.db"
+
 # Configuración de archivos
 CSV_METADATA_PATH = "src/resources/metadata/studio_results_20250715_2237.csv"
 TARGET_PATH = "target/"
 JSON_DOCS_PATH = "target/"
 
 # Configuración de testing
-TEST_DOCS_COUNT = 5
-TEST_QUESTIONS_COUNT = 10
+TEST_DOCS_COUNT = 5  # Documentos para validación de embeddings
+TEST_QUESTIONS_COUNT = 10  # Preguntas para validación inicial
+VALIDATION_QUESTIONS_COUNT = 20  # Preguntas para evaluación cualitativa
 ```
 
 ### 4. Crear Archivo .env
@@ -142,6 +147,7 @@ def create_directories():
     """Crear estructura de directorios"""
     directories = [
         "src/chunking", "src/indexing", "src/query", "src/testing", "src/utils",
+        "src/resources/metadata",
         "data/raw", "data/processed", "data/chroma_db",
         "tests/unit", "tests/integration",
         "config", "logs"
