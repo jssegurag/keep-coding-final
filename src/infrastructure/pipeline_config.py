@@ -19,6 +19,7 @@ class PipelineConfig:
     # Configuración de pasos
     enable_ocr: bool = True
     enable_metadata_extraction: bool = True
+    enable_indexing: bool = True
     enable_legal_reference_extraction: bool = False
     enable_vectorization: bool = False
     enable_database_storage: bool = False
@@ -47,6 +48,9 @@ class PipelineConfig:
         if self.enable_metadata_extraction:
             enabled_steps.append("metadata_extraction")
         
+        if self.enable_indexing:
+            enabled_steps.append("document_indexing")
+        
         if self.enable_legal_reference_extraction:
             enabled_steps.append("legal_reference_extraction")
         
@@ -73,6 +77,7 @@ class PipelineConfig:
             'step_configuration': {
                 'ocr': self.enable_ocr,
                 'metadata_extraction': self.enable_metadata_extraction,
+                'indexing': self.enable_indexing,
                 'legal_reference_extraction': self.enable_legal_reference_extraction,
                 'vectorization': self.enable_vectorization,
                 'database_storage': self.enable_database_storage
@@ -95,6 +100,7 @@ class PipelineConfig:
             output_formats=config_dict.get('output_formats', ["json"]),
             enable_ocr=config_dict.get('step_configuration', {}).get('ocr', True),
             enable_metadata_extraction=config_dict.get('step_configuration', {}).get('metadata_extraction', True),
+            enable_indexing=config_dict.get('step_configuration', {}).get('indexing', True),
             enable_legal_reference_extraction=config_dict.get('step_configuration', {}).get('legal_reference_extraction', False),
             enable_vectorization=config_dict.get('step_configuration', {}).get('vectorization', False),
             enable_database_storage=config_dict.get('step_configuration', {}).get('database_storage', False)

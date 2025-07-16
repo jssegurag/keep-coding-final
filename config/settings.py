@@ -32,7 +32,7 @@ CHROMA_COLLECTION_NAME: Final[str] = "legal_documents"
 SQLITE_DB_PATH: Final[str] = "data/legal_docs.db"
 
 # Configuración de archivos
-CSV_METADATA_PATH: Final[str] = "src/resources/metadata/studio_results_20250715_2237.csv"
+CSV_METADATA_PATH: Final[str] = "src/resources/metadata/pipeline_metadata.csv"
 TARGET_PATH: Final[str] = "target/"
 JSON_DOCS_PATH: Final[str] = "target/"
 

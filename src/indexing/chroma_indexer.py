@@ -231,9 +231,9 @@ class ChromaIndexer:
             documents_to_index = []
             
             for _, row in df.iterrows():
-                # Extraer nombre del archivo del path completo
-                document_path = row['documentname']
-                document_id = os.path.basename(document_path).replace('.pdf', '')
+                # Extraer ID del documento desde la nueva estructura del CSV
+                document_id = row['document_id']
+                document_path = row['json_path']
                 
                 # Crear metadatos básicos
                 metadata = {
@@ -243,9 +243,9 @@ class ChromaIndexer:
                 }
                 
                 # Parsear respuesta JSON si existe
-                if 'response' in row and pd.notna(row['response']):
+                if 'metadata' in row and pd.notna(row['metadata']):
                     try:
-                        response_data = json.loads(row['response'])
+                        response_data = json.loads(row['metadata'])
                         if isinstance(response_data, list):
                             # Si es una lista, tomar el primer elemento
                             response_data = response_data[0] if response_data else {}
