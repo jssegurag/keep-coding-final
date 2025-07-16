@@ -1,11 +1,21 @@
 # 05. Implementación del Sistema de Consultas - MVP RAG
 
 ## 🎯 Objetivo
-Implementar el sistema de consultas con integración de Gemini 2.0 Flash Lite, extracción de filtros mejorada, búsqueda híbrida y trazabilidad de respuestas.
+Implementar el sistema de consultas con integración de Gemini 2.0 Flash Lite, extracción de filtros mejorada, búsqueda híbrida y trazabilidad de respuestas, manteniendo coherencia con la arquitectura y metadatos ya implementados.
 
 ## 📋 Tareas a Ejecutar
 
-### 1. Crear Módulo de Consultas
+### 1. Actualizar Configuración
+Actualizar `config/settings.py` para incluir configuración de Gemini:
+```python
+# Configuración de Gemini para consultas
+GOOGLE_MODEL: Final[str] = "gemini-2.0-flash-lite"
+QUERY_LOG_FILE: Final[str] = "logs/query.log"
+QUERY_TIMEOUT: Final[int] = 30  # segundos
+MAX_CONTEXT_LENGTH: Final[int] = 4000  # tokens
+```
+
+### 2. Crear Módulo de Consultas
 Crear `src/query/query_handler.py`:
 ```python
 """
@@ -15,12 +25,12 @@ import google.generativeai as genai
 import re
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime
-from config.settings import GOOGLE_API_KEY, GOOGLE_MODEL
+from config.settings import GOOGLE_API_KEY, GOOGLE_MODEL, QUERY_LOG_FILE
 from src.indexing.chroma_indexer import ChromaIndexer
 from src.utils.text_utils import normalize_text, extract_legal_entities
 from src.utils.logger import setup_logger
 
-logger = setup_logger(__name__, "logs/query.log")
+logger = setup_logger(__name__, QUERY_LOG_FILE)
 
 class QueryHandler:
     def __init__(self):
@@ -68,7 +78,7 @@ Respuesta:
         # Extraer entidades legales
         entities = extract_legal_entities(query)
         
-        # Mapear entidades a filtros
+        # Mapear entidades a filtros usando los campos normalizados existentes
         if entities['names']:
             # Usar el primer nombre encontrado como demandante
             filters['demandante_normalized'] = normalize_text(entities['names'][0])
@@ -117,14 +127,19 @@ Respuesta:
         if 'error' in search_results:
             return "No se encontraron documentos relevantes para la consulta."
         
-        context_parts = []
         results = search_results['results']
         
         if not results['documents']:
             return "No se encontraron documentos relevantes para la consulta."
         
-        for i, (doc, metadata) in enumerate(zip(results['documents'][0], results['metadatas'][0])):
-            # Extraer información de fuente
+        context_parts = []
+        
+        # Procesar documentos y metadatos
+        documents = results['documents'][0] if results['documents'] else []
+        metadatas = results['metadatas'][0] if results['metadatas'] else []
+        
+        for i, (doc, metadata) in enumerate(zip(documents, metadatas)):
+            # Extraer información de fuente usando metadatos reales
             document_id = metadata.get('document_id', 'unknown')
             chunk_position = metadata.get('chunk_position', 0)
             total_chunks = metadata.get('total_chunks', 0)
@@ -143,13 +158,17 @@ Respuesta:
             return {"document_id": "unknown", "chunk_position": 0, "total_chunks": 0}
         
         # Usar el primer resultado como fuente principal
-        first_metadata = search_results['results']['metadatas'][0][0]
+        metadatas = search_results['results']['metadatas'][0]
+        if metadatas:
+            first_metadata = metadatas[0]
+            
+            return {
+                "document_id": first_metadata.get('document_id', 'unknown'),
+                "chunk_position": first_metadata.get('chunk_position', 0),
+                "total_chunks": first_metadata.get('total_chunks', 0)
+            }
         
-        return {
-            "document_id": first_metadata.get('document_id', 'unknown'),
-            "chunk_position": first_metadata.get('chunk_position', 0),
-            "total_chunks": first_metadata.get('total_chunks', 0)
-        }
+        return {"document_id": "unknown", "chunk_position": 0, "total_chunks": 0}
     
     def _generate_response_with_gemini(self, context: str, query: str, source_info: Dict[str, any]) -> str:
         """Generar respuesta usando Gemini"""
@@ -238,7 +257,7 @@ Respuesta:
         return results
 ```
 
-### 2. Crear Módulo de Extracción de Filtros Mejorado
+### 3. Crear Módulo de Extracción de Filtros Mejorado
 Crear `src/query/filter_extractor.py`:
 ```python
 """
@@ -359,7 +378,7 @@ class FilterExtractor:
         return validated
 ```
 
-### 3. Crear Script de Consultas Interactivo
+### 4. Crear Script de Consultas Interactivo
 Crear `scripts/interactive_query.py`:
 ```python
 #!/usr/bin/env python3
@@ -448,7 +467,7 @@ if __name__ == "__main__":
     main()
 ```
 
-### 4. Crear Tests Unitarios
+### 5. Crear Tests Unitarios
 Crear `tests/unit/test_query_system.py`:
 ```python
 """
@@ -574,7 +593,7 @@ class TestFilterExtractor:
         assert 'empty_filter' not in validated
 ```
 
-### 5. Crear Script de Evaluación
+### 6. Crear Script de Evaluación
 Crear `scripts/evaluate_queries.py`:
 ```python
 #!/usr/bin/env python3
@@ -719,4 +738,37 @@ cat logs/query.log
 - La extracción de filtros debe ser robusta y tolerante a variaciones
 - Las respuestas deben incluir siempre información de fuente
 - El prompt estructurado es crítico para respuestas consistentes
-- La evaluación debe ejecutarse regularmente para monitorear calidad 
+- La evaluación debe ejecutarse regularmente para monitorear calidad
+- **Coherencia con metadatos existentes**: Usar campos normalizados ya implementados
+- **Integración con ChromaIndexer**: Aprovechar la funcionalidad de búsqueda existente 
+
+---
+
+## 🛠️ Ajustes y Mejoras Realizadas en la Implementación Real (Desarrollo)
+
+### Cambios Clave respecto al plan original:
+- **Búsqueda siempre semántica:** Se eliminó el uso de filtros literales por defecto. El sistema busca en todos los chunks indexados usando embeddings, sin requerir coincidencia exacta de nombres, empresas o términos generales.
+- **Correlación inteligente con metadatos:** Las entidades extraídas de la consulta (nombres, fechas, cuantías, expedientes, etc.) se correlacionan con los metadatos de los resultados encontrados, enriqueciendo la respuesta y resaltando coincidencias, pero sin filtrar resultados salvo casos estructurados.
+- **Uso de filtros solo para consultas estructuradas:** Los filtros literales solo se aplican para campos como número de expediente, fecha, cuantía o tipo de medida, nunca para nombres o términos generales.
+- **Respuestas enriquecidas y trazables:** Todas las respuestas incluyen fuente (documento, chunk) y resumen de metadatos relevantes, facilitando la trazabilidad y transparencia.
+- **Refactorización SOLID/GRASP:** Se modularizó la lógica de extracción de entidades, correlación y generación de respuestas, manteniendo bajo acoplamiento y alta cohesión.
+- **Pruebas unitarias orientadas a casos reales:** Los tests cubren consultas generales y estructuradas, usando ejemplos y metadatos reales para validar la efectividad del sistema.
+
+### Ejemplo de comportamiento tras los cambios:
+- **Consulta general:**
+  - Usuario: "tienes información de Coordinadora comercial de cargas CCC SA"
+  - El sistema busca semánticamente en todos los documentos y chunks, encuentra coincidencias en los metadatos y enriquece la respuesta mostrando la entidad correlacionada, sin requerir coincidencia literal.
+
+- **Consulta estructurada:**
+  - Usuario: "expediente numero RCCI2150725299"
+  - El sistema extrae el número de expediente y lo usa como filtro literal, recuperando el expediente exacto y mostrando la información relevante.
+
+- **Consulta por cuantía o fecha:**
+  - Usuario: "¿Cuál es la cuantía del embargo?"
+  - El sistema extrae la entidad cuantía, busca semánticamente y resalta la cuantía encontrada en los metadatos de los resultados.
+
+### Validación y pruebas:
+- Se actualizaron y ampliaron los tests unitarios en `tests/unit/test_query_system.py` para cubrir estos escenarios.
+- Se validó el sistema con documentos y expedientes reales, asegurando robustez y calidad en las respuestas.
+
+> **Estos ajustes garantizan que el sistema de consultas actúe como un verdadero chat jurídico inteligente, flexible y alineado a las mejores prácticas de ingeniería y procesamiento legal automatizado.** 
