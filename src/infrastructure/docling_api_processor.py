@@ -1,6 +1,7 @@
 import os
 from typing import Dict, List
 import requests
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from src.domain.i_document_processor import IDocumentProcessor
 from src.infrastructure.utils import timing_decorator
@@ -14,6 +15,22 @@ class DoclingApiProcessor(IDocumentProcessor):
         if not api_base_url:
             raise ValueError("API base URL cannot be empty.")
         self.api_url = f"{api_base_url.rstrip('/')}/v1alpha/convert/file"
+
+    @retry(
+        stop=stop_after_attempt(2),  # Un reintento (2 intentos total)
+        wait=wait_exponential(multiplier=1, min=4, max=10),  # Espera exponencial entre 4-10 segundos
+        retry=retry_if_exception_type((requests.exceptions.RequestException, requests.exceptions.HTTPError)),
+        reraise=True
+    )
+    @timing_decorator
+    def _make_api_call(self, files: Dict, data: List) -> requests.Response:
+        """
+        Realiza la llamada a la API con reintentos automáticos.
+        """
+        print(f"Realizando llamada a la API: {self.api_url}")
+        response = requests.post(self.api_url, files=files, data=data, timeout=300)
+        response.raise_for_status()
+        return response
 
     @timing_decorator
     def process(self, file_path: str, output_formats: List[str]) -> Dict[str, str]:
@@ -33,9 +50,9 @@ class DoclingApiProcessor(IDocumentProcessor):
 
         try:
             print(f"Processing {file_path} with formats {output_formats}...")
-            response = requests.post(self.api_url, files=files, data=data, timeout=300)
-            response.raise_for_status()  # Raises an HTTPError for bad responses (4xx or 5xx)
-
+            
+            # Usar el método con reintentos
+            response = self._make_api_call(files, data)
             response_data = response.json()
             
             # Map API response keys to the simple format extension
@@ -47,7 +64,7 @@ class DoclingApiProcessor(IDocumentProcessor):
                         results[format_ext] = content
 
         except requests.exceptions.RequestException as e:
-            print(f"An error occurred while calling the Docling API: {e}")
+            print(f"Error en la llamada a la API Docling después de reintentos: {e}")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
         finally:

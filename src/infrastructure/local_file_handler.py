@@ -17,13 +17,20 @@ class LocalFileHandler(IFileHandler):
 
     def find_documents(self) -> List[str]:
         """
-        Finds all files in the source directory.
+        Finds all PDF files in the source directory and subdirectories.
         """
         if not os.path.isdir(self.source_dir):
             print(f"Source directory '{self.source_dir}' not found.")
             return []
         
-        return [os.path.join(self.source_dir, f) for f in os.listdir(self.source_dir) if os.path.isfile(os.path.join(self.source_dir, f))]
+        pdf_files = []
+        for root, dirs, files in os.walk(self.source_dir):
+            for file in files:
+                if file.lower().endswith('.pdf'):
+                    pdf_files.append(os.path.join(root, file))
+        
+        print(f"Found {len(pdf_files)} PDF files to process")
+        return pdf_files
 
     def save_results(self, original_document_name: str, results: Dict[str, str]):
         """

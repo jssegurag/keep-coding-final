@@ -7,9 +7,10 @@
 3. [Arquitectura de Base de Datos Vectorial](#arquitectura-de-base-de-datos-vectorial)
 4. [Estrategias de Vectorización](#estrategias-de-vectorización)
 5. [Estrategias de Retrieval](#estrategias-de-retrieval)
-6. [Implementación Práctica](#implementación-práctica)
-7. [Casos de Uso Específicos](#casos-de-uso-específicos)
-8. [Consideraciones de Rendimiento](#consideraciones-de-rendimiento)
+6. [Captura de Metadata Jurídica](#captura-de-metadata-jurídica)
+7. [Implementación Práctica](#implementación-práctica)
+8. [Casos de Uso Específicos](#casos-de-uso-específicos)
+9. [Consideraciones de Rendimiento](#consideraciones-de-rendimiento)
 
 ## 🎯 Análisis del Contexto
 
@@ -131,6 +132,339 @@ def build_context_hierarchy(chunk):
     return hierarchy
 ```
 
+## 🔍 Captura de Metadata Jurídica
+
+### Estrategia Multi-Fuente para Metadata
+
+Cuando el OCR no es confiable, implementamos una estrategia de múltiples fuentes para capturar metadata jurídica:
+
+#### **A. Extracción Inteligente con Fallbacks**
+
+```python
+class LegalMetadataExtractor:
+    def __init__(self):
+        self.ocr_confidence_threshold = 0.7
+        self.fallback_strategies = [
+            self.extract_from_filename,
+            self.extract_from_filepath,
+            self.extract_from_document_structure,
+            self.extract_from_visual_elements,
+            self.extract_from_context_patterns
+        ]
+    
+    def extract_metadata(self, docling_json, file_info):
+        metadata = {
+            'document_type': 'unknown',
+            'expedient_number': None,
+            'jurisdiction': 'colombia',  # Default
+            'date': None,
+            'authority': None,
+            'legal_references': [],
+            'confidence_score': 0.0,
+            'extraction_method': 'unknown'
+        }
+        
+        # Intentar extracción desde OCR primero
+        ocr_metadata = self.extract_from_ocr(docling_json)
+        if ocr_metadata['confidence_score'] >= self.ocr_confidence_threshold:
+            metadata.update(ocr_metadata)
+            metadata['extraction_method'] = 'ocr'
+            return metadata
+        
+        # Aplicar estrategias de fallback
+        for strategy in self.fallback_strategies:
+            fallback_metadata = strategy(docling_json, file_info)
+            if self.validate_metadata(fallback_metadata):
+                metadata.update(fallback_metadata)
+                metadata['extraction_method'] = strategy.__name__
+                break
+        
+        return metadata
+    
+    def extract_from_filename(self, docling_json, file_info):
+        """Extraer metadata desde el nombre del archivo"""
+        filename = file_info['filename']
+        
+        # Patrones comunes en nombres de archivos jurídicos
+        patterns = {
+            'expedient_number': r'IQ\d{12}',  # Patrón de expedientes
+            'date': r'(\d{4})[-_](\d{2})[-_](\d{2})',  # Fechas
+            'document_type': r'(Judicial|Coactivo|Administrativo)',
+            'authority': r'(Bog|Bar|Med|Cal)',  # Códigos de ciudades
+        }
+        
+        metadata = {}
+        for key, pattern in patterns.items():
+            match = re.search(pattern, filename)
+            if match:
+                metadata[key] = match.group(0)
+        
+        return metadata
+    
+    def extract_from_filepath(self, docling_json, file_info):
+        """Extraer metadata desde la estructura de carpetas"""
+        filepath = file_info['filepath']
+        
+        # Analizar estructura de directorios
+        path_parts = filepath.split('/')
+        
+        metadata = {}
+        
+        # Buscar patrones en la estructura de carpetas
+        for part in path_parts:
+            if 'Judicial' in part:
+                metadata['document_type'] = 'judicial'
+            elif 'Coactivo' in part:
+                metadata['document_type'] = 'coactivo'
+            elif 'Administrativo' in part:
+                metadata['document_type'] = 'administrativo'
+            
+            # Buscar códigos de expediente en carpetas
+            expedient_match = re.search(r'IQ\d{12}', part)
+            if expedient_match:
+                metadata['expedient_number'] = expedient_match.group(0)
+        
+        return metadata
+    
+    def extract_from_document_structure(self, docling_json, file_info):
+        """Extraer metadata desde la estructura del documento"""
+        metadata = {}
+        
+        # Analizar elementos de texto con mayor confianza
+        high_confidence_texts = [
+            text for text in docling_json['texts']
+            if text.get('confidence', 0) > 0.8
+        ]
+        
+        # Buscar patrones en textos de alta confianza
+        for text in high_confidence_texts:
+            content = text.get('content', '')
+            
+            # Buscar expedientes
+            expedient_match = re.search(r'IQ\d{12}', content)
+            if expedient_match:
+                metadata['expedient_number'] = expedient_match.group(0)
+            
+            # Buscar fechas
+            date_match = re.search(r'\d{1,2}[/-]\d{1,2}[/-]\d{4}', content)
+            if date_match:
+                metadata['date'] = date_match.group(0)
+            
+            # Buscar autoridades
+            authority_keywords = ['tribunal', 'juzgado', 'fiscalía', 'procuraduría']
+            for keyword in authority_keywords:
+                if keyword in content.lower():
+                    metadata['authority'] = keyword
+        
+        return metadata
+    
+    def extract_from_visual_elements(self, docling_json, file_info):
+        """Extraer metadata desde elementos visuales (sellos, logos)"""
+        metadata = {}
+        
+        # Analizar imágenes con OCR
+        for picture in docling_json.get('pictures', []):
+            if picture.get('confidence', 0) > 0.6:
+                ocr_text = picture.get('ocr_text', '')
+                
+                # Buscar sellos institucionales
+                institutional_keywords = [
+                    'tribunal superior', 'juzgado', 'fiscalía',
+                    'procuraduría', 'consejo superior'
+                ]
+                
+                for keyword in institutional_keywords:
+                    if keyword in ocr_text.lower():
+                        metadata['authority'] = keyword
+                        break
+        
+        return metadata
+    
+    def extract_from_context_patterns(self, docling_json, file_info):
+        """Extraer metadata usando patrones contextuales"""
+        metadata = {}
+        
+        # Analizar todos los textos disponibles
+        all_texts = []
+        for text in docling_json.get('texts', []):
+            all_texts.append(text.get('content', ''))
+        
+        combined_text = ' '.join(all_texts)
+        
+        # Patrones de contexto para inferir tipo de documento
+        context_patterns = {
+            'judicial': ['sentencia', 'fallo', 'juzgado', 'tribunal'],
+            'coactivo': ['coactivo', 'embargo', 'secuestro'],
+            'administrativo': ['resolución', 'acto administrativo', 'oficio']
+        }
+        
+        for doc_type, patterns in context_patterns.items():
+            if any(pattern in combined_text.lower() for pattern in patterns):
+                metadata['document_type'] = doc_type
+                break
+        
+        return metadata
+    
+    def validate_metadata(self, metadata):
+        """Validar que la metadata extraída sea razonable"""
+        # Al menos debe tener un tipo de documento o expediente
+        return (metadata.get('document_type') != 'unknown' or 
+                metadata.get('expedient_number') is not None)
+```
+
+#### **B. Sistema de Confianza y Calidad**
+
+```python
+class MetadataConfidenceScorer:
+    def calculate_metadata_confidence(self, metadata, extraction_method):
+        """Calcular nivel de confianza de la metadata extraída"""
+        confidence = 0.0
+        
+        # Peso por método de extracción
+        method_weights = {
+            'ocr': 1.0,
+            'extract_from_filename': 0.8,
+            'extract_from_filepath': 0.7,
+            'extract_from_document_structure': 0.9,
+            'extract_from_visual_elements': 0.6,
+            'extract_from_context_patterns': 0.5
+        }
+        
+        base_confidence = method_weights.get(extraction_method, 0.5)
+        
+        # Ajustar por calidad de datos extraídos
+        quality_factors = {
+            'has_expedient': 0.3,
+            'has_date': 0.2,
+            'has_authority': 0.2,
+            'has_document_type': 0.2,
+            'has_legal_references': 0.1
+        }
+        
+        for factor, weight in quality_factors.items():
+            if self.has_quality_factor(metadata, factor):
+                confidence += weight
+        
+        return min(confidence * base_confidence, 1.0)
+    
+    def has_quality_factor(self, metadata, factor):
+        """Verificar si la metadata tiene un factor de calidad específico"""
+        factor_checks = {
+            'has_expedient': lambda m: m.get('expedient_number') is not None,
+            'has_date': lambda m: m.get('date') is not None,
+            'has_authority': lambda m: m.get('authority') is not None,
+            'has_document_type': lambda m: m.get('document_type') != 'unknown',
+            'has_legal_references': lambda m: len(m.get('legal_references', [])) > 0
+        }
+        
+        return factor_checks.get(factor, lambda m: False)(metadata)
+```
+
+#### **C. Metadata Enriquecida con Información Estructural**
+
+```python
+def create_enhanced_legal_metadata(docling_json, file_info, ocr_metadata):
+    """Crear metadata enriquecida combinando múltiples fuentes"""
+    
+    enhanced_metadata = {
+        # Metadata básica
+        "document_type": ocr_metadata.get('document_type', 'unknown'),
+        "expedient_number": ocr_metadata.get('expedient_number'),
+        "jurisdiction": "colombia",
+        "date": ocr_metadata.get('date'),
+        "authority": ocr_metadata.get('authority'),
+        "legal_references": ocr_metadata.get('legal_references', []),
+        "confidence_score": ocr_metadata.get('confidence_score', 0.0),
+        "extraction_method": ocr_metadata.get('extraction_method', 'unknown'),
+        
+        # Metadata estructural
+        "structural_info": {
+            "total_pages": len(set(text.get('page_no', 0) for text in docling_json.get('texts', [])),
+            "total_tables": len(docling_json.get('tables', [])),
+            "total_images": len(docling_json.get('pictures', [])),
+            "total_groups": len(docling_json.get('groups', [])),
+            "ocr_quality": calculate_overall_ocr_quality(docling_json)
+        },
+        
+        # Metadata de archivo
+        "file_info": {
+            "filename": file_info.get('filename'),
+            "filepath": file_info.get('filepath'),
+            "file_size": file_info.get('file_size'),
+            "creation_date": file_info.get('creation_date')
+        },
+        
+        # Metadata de procesamiento
+        "processing_info": {
+            "processing_date": datetime.now().isoformat(),
+            "processor_version": "1.0.0",
+            "fallback_used": ocr_metadata.get('extraction_method') != 'ocr'
+        }
+    }
+    
+    return enhanced_metadata
+
+def calculate_overall_ocr_quality(docling_json):
+    """Calcular calidad general del OCR del documento"""
+    texts = docling_json.get('texts', [])
+    if not texts:
+        return 0.0
+    
+    total_confidence = sum(text.get('confidence', 0) for text in texts)
+    return total_confidence / len(texts)
+```
+
+### Estrategia de Fallback Completa
+
+```python
+class RobustLegalMetadataExtractor:
+    def __init__(self):
+        self.extractors = [
+            OCRMetadataExtractor(),
+            FilenameMetadataExtractor(),
+            FilepathMetadataExtractor(),
+            StructureMetadataExtractor(),
+            VisualMetadataExtractor(),
+            ContextMetadataExtractor()
+        ]
+    
+    def extract_with_fallbacks(self, docling_json, file_info):
+        """Extraer metadata con múltiples estrategias de fallback"""
+        
+        results = []
+        
+        # Intentar cada extractor
+        for extractor in self.extractors:
+            try:
+                metadata = extractor.extract(docling_json, file_info)
+                confidence = self.calculate_confidence(metadata, extractor.name)
+                metadata['confidence'] = confidence
+                results.append(metadata)
+            except Exception as e:
+                logger.warning(f"Extractor {extractor.name} failed: {e}")
+        
+        # Seleccionar el mejor resultado
+        if results:
+            best_result = max(results, key=lambda x: x['confidence'])
+            return self.merge_metadata(results, best_result)
+        
+        # Metadata por defecto si todo falla
+        return self.create_default_metadata(file_info)
+    
+    def merge_metadata(self, results, best_result):
+        """Combinar metadata de múltiples extractores"""
+        merged = best_result.copy()
+        
+        # Complementar con información de otros extractores
+        for result in results:
+            if result != best_result:
+                for key, value in result.items():
+                    if key not in merged or merged[key] is None:
+                        merged[key] = value
+        
+        return merged
+```
+
 ## 🗄️ Arquitectura de Base de Datos Vectorial
 
 ### Estructura del Documento Vectorial
@@ -141,15 +475,42 @@ vector_document = {
     "content": "texto del chunk...",
     "content_vector": [0.1, 0.2, 0.3, ...],
     
-    # Metadata jurídica
+    # Metadata jurídica robusta con fallbacks
     "legal_metadata": {
+        # Metadata básica (con fallbacks)
         "document_type": "oficio_juridico",
         "expedient_number": "IQ051008152850",
         "jurisdiction": "colombia",
         "date": "2024-01-15",
         "authority": "tribunal_superior",
         "legal_references": ["artículo 123", "ley 1234"],
-        "confidence_score": 0.95
+        "confidence_score": 0.95,
+        "extraction_method": "ocr|filename|filepath|structure|visual|context",
+        
+        # Metadata estructural del documento
+        "structural_info": {
+            "total_pages": 5,
+            "total_tables": 2,
+            "total_images": 3,
+            "total_groups": 1,
+            "ocr_quality": 0.85
+        },
+        
+        # Metadata de archivo
+        "file_info": {
+            "filename": "Bog_IQ051008152850.pdf",
+            "filepath": "docs/0811202/Judicial/",
+            "file_size": 2048576,
+            "creation_date": "2024-01-15T10:30:00Z"
+        },
+        
+        # Metadata de procesamiento
+        "processing_info": {
+            "processing_date": "2024-01-15T15:45:00Z",
+            "processor_version": "1.0.0",
+            "fallback_used": True,
+            "fallback_methods": ["filename", "filepath"]
+        }
     },
     
     # Información estructural
@@ -382,6 +743,32 @@ results = vector_db.search(
 )
 ```
 
+### Búsqueda por Método de Extracción
+
+```python
+# Buscar documentos donde se usó fallback
+results = vector_db.search(
+    query="expediente judicial",
+    filter={"legal_metadata.extraction_method": {"$in": ["filename", "filepath"]}}
+)
+
+# Buscar documentos con alta confianza de OCR
+results = vector_db.search(
+    query="sentencia tribunal",
+    filter={"legal_metadata.confidence_score": {"$gte": 0.8}}
+)
+```
+
+### Búsqueda por Calidad de OCR
+
+```python
+# Buscar documentos con buena calidad de OCR
+results = vector_db.search(
+    query="procedimiento administrativo",
+    filter={"legal_metadata.structural_info.ocr_quality": {"$gte": 0.7}}
+)
+```
+
 ## ⚡ Consideraciones de Rendimiento
 
 ### Optimización de Chunks
@@ -432,20 +819,34 @@ def batch_process_chunks(chunks, batch_size=100):
 - Tablas con estructura preservada
 - Jerarquía de contexto mantenida
 
-### ✅ Metadata Enriquecida
+### ✅ Metadata Enriquecida con Fallbacks
 - Información jurídica específica
 - Referencias cruzadas
 - Confianza del OCR
+- **Múltiples fuentes de extracción**
+- **Sistema de confianza robusto**
+- **Metadata estructural completa**
 
 ### ✅ Optimización para Búsqueda
 - Chunks semánticamente coherentes
 - Contexto preservado
 - Relaciones entre elementos
+- **Filtros por calidad de extracción**
+- **Búsquedas por método de procesamiento**
 
 ### ✅ Escalabilidad
 - Procesamiento por lotes
 - Metadata consistente
 - Fácil integración con sistemas RAG
+- **Sistema de fallbacks automático**
+- **Monitoreo de calidad de extracción**
+
+### ✅ Robustez ante OCR Deficiente
+- **Extracción desde nombres de archivo**
+- **Análisis de estructura de carpetas**
+- **Patrones contextuales**
+- **Elementos visuales (sellos, logos)**
+- **Combinación inteligente de fuentes**
 
 ## 📈 Implementación en Fases
 
