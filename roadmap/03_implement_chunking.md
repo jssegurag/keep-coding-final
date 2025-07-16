@@ -1,12 +1,55 @@
 # 03. Implementación del Sistema de Chunking - MVP RAG
 
 ## 🎯 Objetivo
-Implementar el sistema de chunking con fallback recursivo para dividir documentos legales en fragmentos manejables, preservando la estructura semántica y los metadatos.
+Implementar el sistema de chunking con fallback recursivo para dividir documentos legales en fragmentos manejables, preservando la estructura semántica y los metadatos, siguiendo los principios de arquitectura limpia establecidos.
 
 ## 📋 Tareas a Ejecutar
 
+### Verificación de Prerrequisitos
+Antes de implementar el chunking, verificar que los pasos anteriores estén completos:
+
+#### ✅ Pasos Completados:
+- [x] **Paso 1**: Entorno configurado (`config/settings.py`, `requirements.txt`)
+- [x] **Paso 2**: Validación de embeddings completada
+- [x] **Datos de entrada**: `src/resources/metadata/studio_results_20250715_2237.csv` disponible
+- [x] **Estructura de carpetas**: `src/chunking/`, `src/utils/`, `tests/unit/` creadas
+
+#### 🔍 Verificación Automática:
+```bash
+# Verificar configuración
+python -c "from config.settings import CHUNK_SIZE, CHUNK_OVERLAP; print(f'✅ Configuración: CHUNK_SIZE={CHUNK_SIZE}, CHUNK_OVERLAP={CHUNK_OVERLAP}')"
+
+# Verificar datos de entrada
+ls -la src/resources/metadata/studio_results_20250715_2237.csv
+
+# Verificar estructura
+ls -la src/chunking/ src/utils/ tests/unit/
+
+# Verificar logs del paso 2
+ls -la logs/embedding_validation_results.json
+```
+
+### Checklist para el Paso 3
+**Antes de Implementar:**
+- [ ] Verificar configuración de chunking en `config/settings.py`
+- [ ] Validar que los datos de entrada existan y sean accesibles
+- [ ] Confirmar que las dependencias estén instaladas
+- [ ] Revisar logs del paso 2 para entender patrones de documentos
+
+**Durante la Implementación:**
+- [ ] Implementar chunking adaptativo con fallback recursivo
+- [ ] Preservar contexto jurídico y metadatos
+- [ ] Manejar casos edge (textos muy cortos/largos)
+- [ ] Validar calidad de chunks con métricas establecidas
+
+**Después de Implementar:**
+- [ ] Validar que embeddings funcionen mejor con nuevos chunks
+- [ ] Medir mejora en métricas de validación del paso 2
+- [ ] Ajustar parámetros si es necesario
+- [ ] Documentar optimizaciones y lecciones aprendidas
+
 ### 1. Crear Módulo de Chunking
-Crear `src/chunking/document_chunker.py`:
+Crear `src/chunking/document_chunker.py` siguiendo los principios SOLID establecidos:
 ```python
 """
 Módulo para chunking de documentos legales con fallback recursivo
@@ -15,7 +58,7 @@ import re
 import uuid
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
-from config.settings import CHUNK_SIZE, CHUNK_OVERLAP
+from config.settings import CHUNK_SIZE, CHUNK_OVERLAP, MAX_CHUNK_SIZE, MIN_CHUNK_SIZE
 from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__, "logs/chunking.log")
@@ -35,6 +78,21 @@ class Chunk:
 
 class DocumentChunker:
     def __init__(self, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP):
+        """
+        Inicializar chunker con validación de parámetros.
+        
+        Args:
+            chunk_size: Tamaño máximo de chunk en tokens
+            overlap: Overlap entre chunks consecutivos
+        """
+        # Validar parámetros según configuración
+        if chunk_size > MAX_CHUNK_SIZE:
+            raise ValueError(f"Chunk size {chunk_size} excede máximo {MAX_CHUNK_SIZE}")
+        if chunk_size < MIN_CHUNK_SIZE:
+            raise ValueError(f"Chunk size {chunk_size} es menor al mínimo {MIN_CHUNK_SIZE}")
+        if overlap >= chunk_size:
+            raise ValueError(f"Overlap {overlap} debe ser menor que chunk_size {chunk_size}")
+            
         self.chunk_size = chunk_size
         self.overlap = overlap
         self.logger = logger
@@ -275,7 +333,7 @@ class DocumentChunker:
 ```
 
 ### 2. Crear Utilidades de Texto
-Crear `src/utils/text_utils.py`:
+Crear `src/utils/text_utils.py` para procesamiento de texto legal:
 ```python
 """
 Utilidades para procesamiento de texto legal
@@ -365,7 +423,7 @@ def clean_text_for_chunking(text: str) -> str:
 ```
 
 ### 3. Crear Tests Unitarios
-Crear `tests/unit/test_chunking.py`:
+Crear `tests/unit/test_chunking.py` siguiendo el patrón establecido en `test_configuration.py`:
 ```python
 """
 Tests unitarios para el sistema de chunking
@@ -511,7 +569,7 @@ class TestTextUtils:
 ```
 
 ### 4. Crear Script de Prueba
-Crear `scripts/test_chunking.py`:
+Crear `scripts/test_chunking.py` con validación de prerrequisitos:
 ```python
 #!/usr/bin/env python3
 """
@@ -527,8 +585,30 @@ from src.utils.text_utils import clean_text_for_chunking
 from config.settings import CSV_METADATA_PATH, JSON_DOCS_PATH
 import pandas as pd
 
+def verify_prerequisites():
+    """Verificar que los prerrequisitos estén completos"""
+    print("🔍 Verificando prerrequisitos...")
+    
+    # Verificar archivos de entrada
+    if not os.path.exists(CSV_METADATA_PATH):
+        raise FileNotFoundError(f"CSV de metadatos no encontrado: {CSV_METADATA_PATH}")
+    
+    if not os.path.exists(JSON_DOCS_PATH):
+        raise FileNotFoundError(f"Directorio de documentos JSON no encontrado: {JSON_DOCS_PATH}")
+    
+    # Verificar configuración
+    from config.settings import CHUNK_SIZE, CHUNK_OVERLAP, MAX_CHUNK_SIZE, MIN_CHUNK_SIZE
+    assert CHUNK_SIZE <= MAX_CHUNK_SIZE, f"CHUNK_SIZE {CHUNK_SIZE} excede máximo {MAX_CHUNK_SIZE}"
+    assert CHUNK_SIZE >= MIN_CHUNK_SIZE, f"CHUNK_SIZE {CHUNK_SIZE} es menor al mínimo {MIN_CHUNK_SIZE}"
+    assert CHUNK_OVERLAP < CHUNK_SIZE, f"CHUNK_OVERLAP {CHUNK_OVERLAP} debe ser menor que CHUNK_SIZE {CHUNK_SIZE}"
+    
+    print("✅ Prerrequisitos verificados correctamente")
+
 def main():
     print("🧪 Probando sistema de chunking...")
+    
+    # Verificar prerrequisitos
+    verify_prerequisites()
     
     # Crear chunker
     chunker = DocumentChunker()
@@ -586,35 +666,108 @@ if __name__ == "__main__":
 ```
 
 ## ✅ Criterios de Éxito
-- [ ] Módulo `DocumentChunker` implementado correctamente
-- [ ] Fallback recursivo funcionando para textos grandes
-- [ ] Overlap aplicado entre chunks consecutivos
-- [ ] Metadatos preservados en cada chunk
-- [ ] Tests unitarios pasando
-- [ ] Validación de chunks funcionando
-- [ ] Utilidades de texto implementadas
+- [ ] **Prerrequisitos verificados**: Datos de entrada y configuración válidos
+- [ ] **Módulo `DocumentChunker` implementado**: Con validación de parámetros
+- [ ] **Fallback recursivo funcionando**: Para textos que exceden el tamaño máximo
+- [ ] **Overlap aplicado**: Entre chunks consecutivos según configuración
+- [ ] **Metadatos preservados**: Completos y consistentes en cada chunk
+- [ ] **Tests unitarios pasando**: Con cobertura > 80%
+- [ ] **Validación de chunks funcionando**: Con métricas de calidad
+- [ ] **Utilidades de texto implementadas**: Para procesamiento legal
+- [ ] **Integración con paso 2**: Chunks compatibles con validación de embeddings
 
 ## 🔍 Verificación
-Ejecutar los siguientes comandos:
+Ejecutar los siguientes comandos en orden:
+
 ```bash
-# Ejecutar tests
+# 1. Verificar prerrequisitos
+python -c "from config.settings import *; print('✅ Configuración cargada correctamente')"
+
+# 2. Verificar datos de entrada
+ls -la src/resources/metadata/studio_results_20250715_2237.csv
+ls -la target/
+
+# 3. Ejecutar tests unitarios
 python -m pytest tests/unit/test_chunking.py -v
 
-# Probar chunking
+# 4. Probar chunking con validación
 python scripts/test_chunking.py
 
-# Verificar logs
+# 5. Verificar logs
 cat logs/chunking.log
+
+# 6. Validar integración con paso 2
+python -c "from src.chunking.document_chunker import DocumentChunker; print('✅ Chunking integrado correctamente')"
 ```
 
 ## 📊 Métricas de Calidad
-- **Tasa de éxito**: > 95% de chunks dentro del tamaño máximo
-- **Overlap**: Todos los chunks consecutivos deben tener overlap
-- **Metadatos**: Todos los chunks deben preservar metadatos completos
+- **Tasa de éxito**: > 95% de chunks dentro del tamaño máximo configurado
+- **Overlap**: Todos los chunks consecutivos deben tener overlap según `CHUNK_OVERLAP`
+- **Metadatos**: Todos los chunks deben preservar metadatos completos y consistentes
 - **Fallback**: Textos grandes deben dividirse sin pérdida de información
+- **Validación**: Chunks deben ser compatibles con el modelo de embeddings del paso 2
+
+## 🔗 Integración con Otros Pasos
+
+### Con Paso 1 (Configuración):
+- Usa configuración centralizada de `config/settings.py`
+- Sigue estructura de carpetas establecida
+- Utiliza logging consistente con `src/utils/logger.py`
+
+### Con Paso 2 (Validación de Embeddings):
+- Chunks generados deben ser compatibles con `paraphrase-multilingual-mpnet-base-v2`
+- Usar los mismos documentos de prueba del paso 2
+- Validar que embeddings funcionen mejor con chunks optimizados
+
+### Con Paso 4 (Indexación):
+- Preparar chunks para indexación en ChromaDB
+- Preservar metadatos para filtrado híbrido
+- Mantener trazabilidad documento-chunk
 
 ## 📝 Notas Importantes
 - El chunking debe preservar la estructura semántica de los documentos legales
 - El fallback recursivo es crítico para documentos con párrafos largos
 - Los metadatos deben ser completos y consistentes
-- La validación debe ejecutarse después de cada chunking 
+- La validación debe ejecutarse después de cada chunking
+- **Verificar prerrequisitos antes de implementar** para evitar errores
+
+## 🛠️ Troubleshooting
+
+### Problemas Comunes y Soluciones
+
+#### Error: "CSV de metadatos no encontrado"
+```bash
+# Solución: Verificar que el archivo existe
+ls -la src/resources/metadata/studio_results_20250715_2237.csv
+# Si no existe, copiar desde la ubicación correcta
+```
+
+#### Error: "Directorio de documentos JSON no encontrado"
+```bash
+# Solución: Crear directorio target si no existe
+mkdir -p target/
+# Verificar que contiene archivos JSON de documentos
+ls -la target/*.json
+```
+
+#### Error: "CHUNK_SIZE excede máximo"
+```bash
+# Solución: Verificar configuración en config/settings.py
+python -c "from config.settings import CHUNK_SIZE, MAX_CHUNK_SIZE; print(f'CHUNK_SIZE={CHUNK_SIZE}, MAX_CHUNK_SIZE={MAX_CHUNK_SIZE}')"
+# Ajustar CHUNK_SIZE si es necesario
+```
+
+#### Error: "No se pudieron crear chunks"
+```bash
+# Solución: Verificar que el texto no esté vacío
+# Revisar logs para más detalles
+cat logs/chunking.log
+```
+
+#### Tests fallando
+```bash
+# Solución: Verificar que todas las dependencias estén instaladas
+pip install -r requirements.txt
+# Ejecutar tests con más detalle
+python -m pytest tests/unit/test_chunking.py -v -s
+``` 
