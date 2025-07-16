@@ -1,0 +1,65 @@
+# Reglas de Calidad de Código y Principios SOLID/GRASP
+
+## Principios SOLID
+- **S**ingle Responsibility Principle (SRP): Cada clase debe tener una sola responsabilidad
+- **O**pen/Closed Principle (OCP): Abierto para extensión, cerrado para modificación
+- **L**iskov Substitution Principle (LSP): Las clases derivadas deben ser sustituibles por sus clases base
+- **I**nterface Segregation Principle (ISP): Interfaces específicas en lugar de interfaces generales
+- **D**ependency Inversion Principle (DIP): Depender de abstracciones, no de implementaciones concretas
+
+## Principios GRASP
+- **G**eneral Responsibility Assignment Software Patterns
+- **R**esponsibility-Driven Design
+- **A**ssign responsibilities to classes based on cohesion and coupling
+- **S**eparation of concerns
+- **P**rotected variations
+
+## Buenas Prácticas de Desarrollo
+
+### Estructura y Organización
+- Código limpio y segmentado por responsabilidades
+- Alta cohesión y bajo acoplamiento
+- Separación clara entre capas (domain, application, infrastructure, interface)
+- Uso de inyección de dependencias
+- Implementación de interfaces para desacoplamiento
+
+### Calidad de Código Python
+- Seguir PEP 8 para estilo de código
+- Usar type hints en todas las funciones y métodos
+- Implementar docstrings descriptivos
+- Manejar excepciones de forma específica
+- Usar context managers cuando sea apropiado
+- Preferir composición sobre herencia
+- Implementar logging estructurado sin emojis
+
+### Logging y Debugging
+- **NO usar emojis en logs** - solo texto plano
+- Usar niveles de logging apropiados (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+- Incluir contexto relevante en los mensajes de log
+- Usar logging estructurado con campos específicos
+
+### Manejo de Errores
+- Crear excepciones personalizadas para el dominio
+- Proporcionar mensajes de error descriptivos
+- Implementar logging de errores con stack traces
+- Manejar errores en los límites del sistema
+
+### Performance y Seguridad
+- Optimizar consultas y operaciones costosas
+- Validar todas las entradas de usuario
+- Sanitizar datos antes de procesarlos
+- Implementar rate limiting cuando sea necesario
+
+### Documentación
+- Mantener README actualizado
+- Documentar APIs y interfaces
+- Incluir ejemplos de uso
+- Documentar decisiones de arquitectura importantes
+
+### Refactoring y Mantenimiento
+- Identificar y eliminar code smells
+- Refactorizar código duplicado
+- Mantener métodos y clases pequeñas y enfocadas
+- Revisar y mejorar código regularmente
+alwaysApply: true
+---
