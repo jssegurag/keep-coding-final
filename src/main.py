@@ -5,6 +5,7 @@ from src.infrastructure.local_file_handler import LocalFileHandler
 from src.infrastructure.docling_api_processor import DoclingApiProcessor
 from src.infrastructure.pipeline_steps.ocr_step import OCRStep
 from src.infrastructure.pipeline_steps.metadata_extraction_step import MetadataExtractionStep
+from src.infrastructure.pipeline_steps.indexing_step import IndexingStep
 from src.application.document_pipeline_orchestrator import DocumentPipelineOrchestrator
 from src.infrastructure.pipeline_config import PipelineConfig
 
@@ -29,6 +30,10 @@ def create_pipeline_steps(api_base_url: str, config: PipelineConfig) -> list:
     
     if config.enable_metadata_extraction:
         pipeline_steps.append(MetadataExtractionStep())
+    
+    # Agregar paso de indexación
+    if config.enable_indexing:
+        pipeline_steps.append(IndexingStep())
     
     # Aquí se pueden agregar más pasos en el futuro:
     # if config.enable_legal_reference_extraction:

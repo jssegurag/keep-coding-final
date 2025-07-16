@@ -1,0 +1,60 @@
+{
+  "total_models_tested": 5,
+  "successful_models": 4,
+  "failed_models": 1,
+  "best_model": "paraphrase-multilingual-mpnet-base-v2",
+  "best_score": "0.46833658",
+  "model_rankings": [
+    {
+      "rank": 1,
+      "model_name": "paraphrase-multilingual-mpnet-base-v2",
+      "overall_score": "0.46833658",
+      "semantic_similarity": "0.42600822",
+      "name_search": "0.6133979",
+      "legal_concepts": "0.3656037",
+      "cross_validation_avg": "0.46833658",
+      "cross_validation_std": "0.0",
+      "consistency": "1.0"
+    },
+    {
+      "rank": 2,
+      "model_name": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "overall_score": "0.3917736",
+      "semantic_similarity": "0.32178706",
+      "name_search": "0.57166594",
+      "legal_concepts": "0.2818679",
+      "cross_validation_avg": "0.3917736",
+      "cross_validation_std": "0.0",
+      "consistency": "1.0"
+    },
+    {
+      "rank": 3,
+      "model_name": "sentence-transformers/all-mpnet-base-v2",
+      "overall_score": "0.36291298",
+      "semantic_similarity": "0.3198972",
+      "name_search": "0.5055227",
+      "legal_concepts": "0.26331896",
+      "cross_validation_avg": "0.36291298",
+      "cross_validation_std": "0.0",
+      "consistency": "1.0"
+    },
+    {
+      "rank": 4,
+      "model_name": "sentence-transformers/distiluse-base-multilingual-cased-v2",
+      "overall_score": "0.08939254",
+      "semantic_similarity": "0.07391289",
+      "name_search": "0.19890298",
+      "legal_concepts": "-0.0046382654",
+      "cross_validation_avg": 0,
+      "cross_validation_std": 0,
+      "consistency": 0
+    }
+  ],
+  "recommendations": [
+    "❌ Ningún modelo alcanza el umbral mínimo recomendado",
+    "✅ Alta consistencia en validación cruzada",
+    "⚠️ Diferenciación moderada del segundo mejor modelo"
+  ],
+  "timestamp": "2025-07-16T14:36:04.881629",
+  "version": "1.0"
+}
