@@ -1,875 +1,538 @@
-# Estrategia RAG para Documentos Jurídicos con DoclingDocument JSON
+# Estrategia RAG para Sistema de Expedientes Jurídicos - MVP Blindado
 
-## 📋 Índice
+## 1. Arquitectura de Indexación - MVP Blindado
 
-1. [Análisis del Contexto](#análisis-del-contexto)
-2. [Estrategia de Procesamiento](#estrategia-de-procesamiento)
-3. [Arquitectura de Base de Datos Vectorial](#arquitectura-de-base-de-datos-vectorial)
-4. [Estrategias de Vectorización](#estrategias-de-vectorización)
-5. [Estrategias de Retrieval](#estrategias-de-retrieval)
-6. [Captura de Metadata Jurídica](#captura-de-metadata-jurídica)
-7. [Implementación Práctica](#implementación-práctica)
-8. [Casos de Uso Específicos](#casos-de-uso-específicos)
-9. [Consideraciones de Rendimiento](#consideraciones-de-rendimiento)
+### 1.1 Stack Tecnológico para MVP
 
-## 🎯 Análisis del Contexto
+**Arquitectura Simplificada: ChromaDB + SQLite + Gemini 2.0 Flash Lite**
 
-### Características Específicas de Documentos Jurídicos
+#### Componentes Principales:
+- **ChromaDB**: Base de datos vectorial + metadatos filtrables
+- **SQLite**: Base de datos relacional para metadatos canónicos
+- **Gemini 2.0 Flash Lite**: LLM para generación de respuestas
 
-Los documentos jurídicos presentan características únicas que requieren un procesamiento especializado:
+#### Justificación de la Simplificación:
 
-#### **Estructura Jerárquica Compleja:**
-- **Encabezados**: Títulos, subtítulos, secciones, artículos
-- **Referencias Cruzadas**: Citas legales, números de expediente
-- **Metadata Jurídica**: Fechas, jurisdicciones, autoridades
-- **Elementos Visuales**: Firmas, sellos, logos institucionales
+1. **Eliminación de Complejidad Innecesaria**: 
+   - Un solo motor de búsqueda vectorial con filtrado nativo
+   - Sin enrutamiento complejo de consultas
+   - Flujo único y robusto
 
-#### **Tablas Variables:**
-- **Tamaños Dinámicos**: Desde tablas pequeñas hasta complejas
-- **Información Crítica**: Fechas, montos, referencias legales
-- **Relaciones Estructurales**: Headers, celdas combinadas, spans
+2. **Optimización para MVP**: 
+   - ChromaDB maneja tanto vectores como filtrado de metadatos
+   - SQLite solo para datos de referencia
+   - Respuestas rápidas y precisas
 
-#### **Información Contextual:**
-- **Referencias Legales**: Artículos, leyes, decretos
-- **Procedimientos**: Números de radicación, expedientes
-- **Temporalidad**: Fechas de presentación, vencimientos
+3. **Escalabilidad Futura**: 
+   - Fácil migración a arquitectura híbrida completa
+   - Base sólida para iteraciones
 
-### Análisis del JSON de DoclingDocument
+### 1.2 Estrategia de Chunking - CRÍTICA PARA MVP
 
-Basándonos en el análisis de la estructura JSON, identificamos:
+#### Implementación Obligatoria de Chunking:
 
-#### **Elementos Disponibles:**
-- **Texts**: 20-66 elementos por documento con labels específicos
-- **Tables**: 0-4 elementos con estructura compleja de grid
-- **Pictures**: 3-10 elementos con OCR integrado
-- **Groups**: 0-5 elementos (key_value_area, form_area, list)
+**Problema Identificado**: Un embedding por documento completo es inútil para RAG efectivo.
 
-#### **Información de Coordenadas:**
-- **Sistema**: BOTTOMLEFT con coordenadas precisas
-- **Provenance**: Información de página y bounding boxes
-- **Relaciones**: Referencias JSON entre elementos
+**Solución MVP**:
+- **Tamaño de Chunk**: 512 tokens con overlap de 50 tokens
+- **Estrategia**: División por párrafos naturales + límite de tokens
+- **Metadatos por Chunk**: ID documento padre + posición + metadatos relevantes
 
-## 🏗️ Estrategia de Procesamiento
-
-### Fase 1: Extracción Estructurada
-
-#### **A. Procesamiento por Tipo de Elemento**
-
-```python
-class LegalDocumentProcessor:
-    def process_docling_json(self, json_data):
-        chunks = []
-        
-        # 1. Procesar textos con contexto jurídico
-        text_chunks = self.process_legal_texts(json_data['texts'])
-        chunks.extend(text_chunks)
-        
-        # 2. Procesar tablas preservando estructura
-        table_chunks = self.process_legal_tables(json_data['tables'])
-        chunks.extend(table_chunks)
-        
-        # 3. Procesar imágenes con OCR
-        image_chunks = self.process_legal_images(json_data['pictures'])
-        chunks.extend(image_chunks)
-        
-        # 4. Procesar grupos estructurados
-        group_chunks = self.process_legal_groups(json_data['groups'])
-        chunks.extend(group_chunks)
-        
-        return chunks
+#### Estructura de Chunking:
+```
+Documento RCCI2150725310
+├── Chunk 1: [0-512 tokens] - Encabezado y datos básicos
+├── Chunk 2: [462-974 tokens] - Demandante y demandado
+├── Chunk 3: [924-1436 tokens] - Hechos principales
+├── Chunk 4: [1386-1898 tokens] - Medidas cautelares
+└── Chunk N: [últimos tokens] - Firmas y conclusiones
 ```
 
-#### **B. Chunking Inteligente**
-
-```python
-class IntelligentLegalChunker:
-    def chunk_by_type(self, element):
-        if element['type'] == 'header':
-            return self.create_header_chunk(element)
-        elif element['type'] == 'table':
-            return self.create_table_chunk(element)
-        elif element['type'] == 'text':
-            return self.sentence_based_chunking(element)
-        elif element['type'] == 'image':
-            return self.create_image_chunk(element)
-```
-
-### Fase 2: Enriquecimiento Contextual
-
-#### **A. Metadata Jurídica Específica**
-
-```python
-def extract_legal_metadata(text):
-    metadata = {
-        'document_type': 'legal_document',
-        'jurisdiction': 'colombia',
-        'expedient_number': extract_expedient_number(text),
-        'date': extract_date(text),
-        'authority': extract_authority(text),
-        'legal_references': extract_legal_citations(text),
-        'confidence_score': calculate_ocr_confidence(text)
-    }
-    return metadata
-```
-
-#### **B. Contexto Jerárquico**
-
-```python
-def build_context_hierarchy(chunk):
-    hierarchy = []
-    
-    # Agregar contexto de página
-    hierarchy.append(f"página_{chunk.page_no}")
-    
-    # Agregar contexto de sección
-    if chunk.parent_section:
-        hierarchy.append(chunk.parent_section)
-    
-    # Agregar contexto de artículo
-    if chunk.parent_article:
-        hierarchy.append(chunk.parent_article)
-    
-    return hierarchy
-```
-
-## 🔍 Captura de Metadata Jurídica
-
-### Estrategia Multi-Fuente para Metadata
-
-Cuando el OCR no es confiable, implementamos una estrategia de múltiples fuentes para capturar metadata jurídica:
-
-#### **A. Extracción Inteligente con Fallbacks**
-
-```python
-class LegalMetadataExtractor:
-    def __init__(self):
-        self.ocr_confidence_threshold = 0.7
-        self.fallback_strategies = [
-            self.extract_from_filename,
-            self.extract_from_filepath,
-            self.extract_from_document_structure,
-            self.extract_from_visual_elements,
-            self.extract_from_context_patterns
-        ]
-    
-    def extract_metadata(self, docling_json, file_info):
-        metadata = {
-            'document_type': 'unknown',
-            'expedient_number': None,
-            'jurisdiction': 'colombia',  # Default
-            'date': None,
-            'authority': None,
-            'legal_references': [],
-            'confidence_score': 0.0,
-            'extraction_method': 'unknown'
-        }
-        
-        # Intentar extracción desde OCR primero
-        ocr_metadata = self.extract_from_ocr(docling_json)
-        if ocr_metadata['confidence_score'] >= self.ocr_confidence_threshold:
-            metadata.update(ocr_metadata)
-            metadata['extraction_method'] = 'ocr'
-            return metadata
-        
-        # Aplicar estrategias de fallback
-        for strategy in self.fallback_strategies:
-            fallback_metadata = strategy(docling_json, file_info)
-            if self.validate_metadata(fallback_metadata):
-                metadata.update(fallback_metadata)
-                metadata['extraction_method'] = strategy.__name__
-                break
-        
-        return metadata
-    
-    def extract_from_filename(self, docling_json, file_info):
-        """Extraer metadata desde el nombre del archivo"""
-        filename = file_info['filename']
-        
-        # Patrones comunes en nombres de archivos jurídicos
-        patterns = {
-            'expedient_number': r'IQ\d{12}',  # Patrón de expedientes
-            'date': r'(\d{4})[-_](\d{2})[-_](\d{2})',  # Fechas
-            'document_type': r'(Judicial|Coactivo|Administrativo)',
-            'authority': r'(Bog|Bar|Med|Cal)',  # Códigos de ciudades
-        }
-        
-        metadata = {}
-        for key, pattern in patterns.items():
-            match = re.search(pattern, filename)
-            if match:
-                metadata[key] = match.group(0)
-        
-        return metadata
-    
-    def extract_from_filepath(self, docling_json, file_info):
-        """Extraer metadata desde la estructura de carpetas"""
-        filepath = file_info['filepath']
-        
-        # Analizar estructura de directorios
-        path_parts = filepath.split('/')
-        
-        metadata = {}
-        
-        # Buscar patrones en la estructura de carpetas
-        for part in path_parts:
-            if 'Judicial' in part:
-                metadata['document_type'] = 'judicial'
-            elif 'Coactivo' in part:
-                metadata['document_type'] = 'coactivo'
-            elif 'Administrativo' in part:
-                metadata['document_type'] = 'administrativo'
-            
-            # Buscar códigos de expediente en carpetas
-            expedient_match = re.search(r'IQ\d{12}', part)
-            if expedient_match:
-                metadata['expedient_number'] = expedient_match.group(0)
-        
-        return metadata
-    
-    def extract_from_document_structure(self, docling_json, file_info):
-        """Extraer metadata desde la estructura del documento"""
-        metadata = {}
-        
-        # Analizar elementos de texto con mayor confianza
-        high_confidence_texts = [
-            text for text in docling_json['texts']
-            if text.get('confidence', 0) > 0.8
-        ]
-        
-        # Buscar patrones en textos de alta confianza
-        for text in high_confidence_texts:
-            content = text.get('content', '')
-            
-            # Buscar expedientes
-            expedient_match = re.search(r'IQ\d{12}', content)
-            if expedient_match:
-                metadata['expedient_number'] = expedient_match.group(0)
-            
-            # Buscar fechas
-            date_match = re.search(r'\d{1,2}[/-]\d{1,2}[/-]\d{4}', content)
-            if date_match:
-                metadata['date'] = date_match.group(0)
-            
-            # Buscar autoridades
-            authority_keywords = ['tribunal', 'juzgado', 'fiscalía', 'procuraduría']
-            for keyword in authority_keywords:
-                if keyword in content.lower():
-                    metadata['authority'] = keyword
-        
-        return metadata
-    
-    def extract_from_visual_elements(self, docling_json, file_info):
-        """Extraer metadata desde elementos visuales (sellos, logos)"""
-        metadata = {}
-        
-        # Analizar imágenes con OCR
-        for picture in docling_json.get('pictures', []):
-            if picture.get('confidence', 0) > 0.6:
-                ocr_text = picture.get('ocr_text', '')
-                
-                # Buscar sellos institucionales
-                institutional_keywords = [
-                    'tribunal superior', 'juzgado', 'fiscalía',
-                    'procuraduría', 'consejo superior'
-                ]
-                
-                for keyword in institutional_keywords:
-                    if keyword in ocr_text.lower():
-                        metadata['authority'] = keyword
-                        break
-        
-        return metadata
-    
-    def extract_from_context_patterns(self, docling_json, file_info):
-        """Extraer metadata usando patrones contextuales"""
-        metadata = {}
-        
-        # Analizar todos los textos disponibles
-        all_texts = []
-        for text in docling_json.get('texts', []):
-            all_texts.append(text.get('content', ''))
-        
-        combined_text = ' '.join(all_texts)
-        
-        # Patrones de contexto para inferir tipo de documento
-        context_patterns = {
-            'judicial': ['sentencia', 'fallo', 'juzgado', 'tribunal'],
-            'coactivo': ['coactivo', 'embargo', 'secuestro'],
-            'administrativo': ['resolución', 'acto administrativo', 'oficio']
-        }
-        
-        for doc_type, patterns in context_patterns.items():
-            if any(pattern in combined_text.lower() for pattern in patterns):
-                metadata['document_type'] = doc_type
-                break
-        
-        return metadata
-    
-    def validate_metadata(self, metadata):
-        """Validar que la metadata extraída sea razonable"""
-        # Al menos debe tener un tipo de documento o expediente
-        return (metadata.get('document_type') != 'unknown' or 
-                metadata.get('expedient_number') is not None)
-```
-
-#### **B. Sistema de Confianza y Calidad**
-
-```python
-class MetadataConfidenceScorer:
-    def calculate_metadata_confidence(self, metadata, extraction_method):
-        """Calcular nivel de confianza de la metadata extraída"""
-        confidence = 0.0
-        
-        # Peso por método de extracción
-        method_weights = {
-            'ocr': 1.0,
-            'extract_from_filename': 0.8,
-            'extract_from_filepath': 0.7,
-            'extract_from_document_structure': 0.9,
-            'extract_from_visual_elements': 0.6,
-            'extract_from_context_patterns': 0.5
-        }
-        
-        base_confidence = method_weights.get(extraction_method, 0.5)
-        
-        # Ajustar por calidad de datos extraídos
-        quality_factors = {
-            'has_expedient': 0.3,
-            'has_date': 0.2,
-            'has_authority': 0.2,
-            'has_document_type': 0.2,
-            'has_legal_references': 0.1
-        }
-        
-        for factor, weight in quality_factors.items():
-            if self.has_quality_factor(metadata, factor):
-                confidence += weight
-        
-        return min(confidence * base_confidence, 1.0)
-    
-    def has_quality_factor(self, metadata, factor):
-        """Verificar si la metadata tiene un factor de calidad específico"""
-        factor_checks = {
-            'has_expedient': lambda m: m.get('expedient_number') is not None,
-            'has_date': lambda m: m.get('date') is not None,
-            'has_authority': lambda m: m.get('authority') is not None,
-            'has_document_type': lambda m: m.get('document_type') != 'unknown',
-            'has_legal_references': lambda m: len(m.get('legal_references', [])) > 0
-        }
-        
-        return factor_checks.get(factor, lambda m: False)(metadata)
-```
-
-#### **C. Metadata Enriquecida con Información Estructural**
-
-```python
-def create_enhanced_legal_metadata(docling_json, file_info, ocr_metadata):
-    """Crear metadata enriquecida combinando múltiples fuentes"""
-    
-    enhanced_metadata = {
-        # Metadata básica
-        "document_type": ocr_metadata.get('document_type', 'unknown'),
-        "expedient_number": ocr_metadata.get('expedient_number'),
-        "jurisdiction": "colombia",
-        "date": ocr_metadata.get('date'),
-        "authority": ocr_metadata.get('authority'),
-        "legal_references": ocr_metadata.get('legal_references', []),
-        "confidence_score": ocr_metadata.get('confidence_score', 0.0),
-        "extraction_method": ocr_metadata.get('extraction_method', 'unknown'),
-        
-        # Metadata estructural
-        "structural_info": {
-            "total_pages": len(set(text.get('page_no', 0) for text in docling_json.get('texts', [])),
-            "total_tables": len(docling_json.get('tables', [])),
-            "total_images": len(docling_json.get('pictures', [])),
-            "total_groups": len(docling_json.get('groups', [])),
-            "ocr_quality": calculate_overall_ocr_quality(docling_json)
-        },
-        
-        # Metadata de archivo
-        "file_info": {
-            "filename": file_info.get('filename'),
-            "filepath": file_info.get('filepath'),
-            "file_size": file_info.get('file_size'),
-            "creation_date": file_info.get('creation_date')
-        },
-        
-        # Metadata de procesamiento
-        "processing_info": {
-            "processing_date": datetime.now().isoformat(),
-            "processor_version": "1.0.0",
-            "fallback_used": ocr_metadata.get('extraction_method') != 'ocr'
-        }
-    }
-    
-    return enhanced_metadata
-
-def calculate_overall_ocr_quality(docling_json):
-    """Calcular calidad general del OCR del documento"""
-    texts = docling_json.get('texts', [])
-    if not texts:
-        return 0.0
-    
-    total_confidence = sum(text.get('confidence', 0) for text in texts)
-    return total_confidence / len(texts)
-```
-
-### Estrategia de Fallback Completa
-
-```python
-class RobustLegalMetadataExtractor:
-    def __init__(self):
-        self.extractors = [
-            OCRMetadataExtractor(),
-            FilenameMetadataExtractor(),
-            FilepathMetadataExtractor(),
-            StructureMetadataExtractor(),
-            VisualMetadataExtractor(),
-            ContextMetadataExtractor()
-        ]
-    
-    def extract_with_fallbacks(self, docling_json, file_info):
-        """Extraer metadata con múltiples estrategias de fallback"""
-        
-        results = []
-        
-        # Intentar cada extractor
-        for extractor in self.extractors:
-            try:
-                metadata = extractor.extract(docling_json, file_info)
-                confidence = self.calculate_confidence(metadata, extractor.name)
-                metadata['confidence'] = confidence
-                results.append(metadata)
-            except Exception as e:
-                logger.warning(f"Extractor {extractor.name} failed: {e}")
-        
-        # Seleccionar el mejor resultado
-        if results:
-            best_result = max(results, key=lambda x: x['confidence'])
-            return self.merge_metadata(results, best_result)
-        
-        # Metadata por defecto si todo falla
-        return self.create_default_metadata(file_info)
-    
-    def merge_metadata(self, results, best_result):
-        """Combinar metadata de múltiples extractores"""
-        merged = best_result.copy()
-        
-        # Complementar con información de otros extractores
-        for result in results:
-            if result != best_result:
-                for key, value in result.items():
-                    if key not in merged or merged[key] is None:
-                        merged[key] = value
-        
-        return merged
-```
-
-## 🗄️ Arquitectura de Base de Datos Vectorial
-
-### Estructura del Documento Vectorial
-
-```python
-vector_document = {
-    # Contenido principal
-    "content": "texto del chunk...",
-    "content_vector": [0.1, 0.2, 0.3, ...],
-    
-    # Metadata jurídica robusta con fallbacks
-    "legal_metadata": {
-        # Metadata básica (con fallbacks)
-        "document_type": "oficio_juridico",
-        "expedient_number": "IQ051008152850",
-        "jurisdiction": "colombia",
-        "date": "2024-01-15",
-        "authority": "tribunal_superior",
-        "legal_references": ["artículo 123", "ley 1234"],
-        "confidence_score": 0.95,
-        "extraction_method": "ocr|filename|filepath|structure|visual|context",
-        
-        # Metadata estructural del documento
-        "structural_info": {
-            "total_pages": 5,
-            "total_tables": 2,
-            "total_images": 3,
-            "total_groups": 1,
-            "ocr_quality": 0.85
-        },
-        
-        # Metadata de archivo
-        "file_info": {
-            "filename": "Bog_IQ051008152850.pdf",
-            "filepath": "docs/0811202/Judicial/",
-            "file_size": 2048576,
-            "creation_date": "2024-01-15T10:30:00Z"
-        },
-        
-        # Metadata de procesamiento
-        "processing_info": {
-            "processing_date": "2024-01-15T15:45:00Z",
-            "processor_version": "1.0.0",
-            "fallback_used": True,
-            "fallback_methods": ["filename", "filepath"]
-        }
-    },
-    
-    # Información estructural
-    "structural_metadata": {
-        "chunk_type": "text|table|header|image",
-        "page_number": 1,
-        "bbox": {"l": 100, "t": 200, "r": 300, "b": 250},
-        "context_hierarchy": ["título", "sección", "artículo"],
-        "parent_chunk_id": "chunk_123"
-    },
-    
-    # Información de búsqueda
-    "search_metadata": {
-        "keywords": ["expediente", "radicación", "fecha"],
-        "semantic_tags": ["procedimiento", "administrativo"],
-        "cross_references": ["chunk_456", "chunk_789"]
-    }
+#### Metadatos por Chunk:
+```json
+{
+  "document_id": "RCCI2150725310",
+  "chunk_id": "RCCI2150725310_chunk_1",
+  "chunk_position": 1,
+  "total_chunks": 5,
+  "demandante": "NURY WILLELMA ROMERO GOMEZ",
+  "demandado": "MUNICIPIO DE ARAUCA",
+  "tipo_medida": "Embargo",
+  "entidad": "MUNICIPIO DE ARAUCA",
+  "fecha": "2025-07-14",
+  "cuantia": "238.984.000,00"
 }
 ```
 
-### Estrategias de Indexación
+### 1.3 Flujo de Consulta Simplificado - MVP
 
-#### **A. Índices Múltiples**
+#### Eliminación del Enrutador Complejo:
 
-```python
-# 1. Índice semántico principal
-semantic_index = create_vector_index(
-    vectors=content_vectors,
-    similarity_metric='cosine'
-)
+**Problema Identificado**: Clasificación de consultas añade complejidad innecesaria.
 
-# 2. Índice de metadata
-metadata_index = create_vector_index(
-    vectors=metadata_vectors,
-    similarity_metric='cosine'
-)
+**Solución MVP - Flujo Único**:
+1. **Extracción de Filtros**: Extraer entidades de la consulta (nombres, fechas, números)
+2. **Búsqueda Híbrida Simplificada**:
+   - Filtrar chunks en ChromaDB por metadatos
+   - Búsqueda vectorial en chunks filtrados
+3. **Recuperación de Contexto**: Top-k chunks más relevantes
+4. **Generación con LLM**: Prompt único que maneja todos los tipos de consulta
 
-# 3. Índice híbrido
-hybrid_index = create_hybrid_index(
-    vector_queries=content_vectors,
-    keyword_queries=legal_keywords,
-    weight_vector=0.7,
-    weight_keyword=0.3
-)
+#### Prompt Único para Gemini con Instrucciones Estructuradas:
+```
+Contexto: {chunks_recuperados}
+
+Pregunta del usuario: {consulta_original}
+
+Instrucciones específicas:
+- Si la pregunta busca un resumen, genera un resumen estructurado del expediente
+- Si la pregunta es específica sobre contenido, responde basándote únicamente en el contexto proporcionado
+- Si la pregunta es sobre metadatos (fechas, nombres, cuantías), extrae la información relevante
+- Si la información no está en el contexto, responde: "No se encuentra en el expediente proporcionado."
+- Responde en español de manera profesional y jurídica
+- Al final de cada respuesta, incluye: "Fuente: {document_id}, Chunk {chunk_position} de {total_chunks}"
+
+Tareas posibles:
+- Resumir el contenido legal
+- Responder preguntas específicas del contenido
+- Extraer campos clave como fechas, cuantías o nombres
+- Identificar tipos de medidas cautelares
 ```
 
-#### **B. Particionamiento por Tipo**
+## 2. Flujo de Datos Simplificado - MVP
 
-```python
-# Separar chunks por tipo para búsquedas especializadas
-indexes = {
-    'text_chunks': create_index(text_chunks),
-    'table_chunks': create_index(table_chunks),
-    'header_chunks': create_index(header_chunks),
-    'image_chunks': create_index(image_chunks)
+### 2.1 Proceso de Ingesta con Chunking
+
+#### Fase 1: Extracción y Chunking
+1. **Lectura de Datos**
+   - Leer CSV de metadatos
+   - Extraer texto completo de JSON de Docling
+   - Parsear metadatos estructurados
+
+2. **Chunking Obligatorio**
+   - Dividir texto en chunks de 512 tokens
+   - Overlap de 50 tokens entre chunks
+   - Preservar estructura semántica (párrafos)
+   - **Fallback recursivo**: Si un párrafo excede 512 tokens, dividir por oraciones
+
+3. **Preparación de Metadatos**
+   - Asignar metadatos a cada chunk
+   - Generar IDs únicos por chunk
+   - Validar integridad de datos
+
+#### Fase 2: Indexación Simplificada
+1. **Indexación en ChromaDB**
+   - Generar embedding por chunk
+   - Almacenar metadatos filtrables
+   - Asociar con ID del documento padre
+
+2. **Base de Datos de Referencia**
+   - SQLite solo para metadatos canónicos
+   - Relaciones documento-chunks
+   - Estadísticas de indexación
+
+### 2.2 Flujo de Consulta - MVP Blindado
+
+#### Eliminación del Enrutador:
+**Antes (Complejo)**:
+```
+Consulta → Clasificador → Enrutador → Motor específico → Respuesta
+```
+
+**Ahora (Simple)**:
+```
+Consulta → Extracción filtros → Búsqueda híbrida → LLM → Respuesta
+```
+
+#### Proceso Detallado:
+
+1. **Extracción de Filtros Mejorada**
+   - **Normalización de nombres**: Convertir a minúscula, sin tildes
+   - **Búsqueda parcial**: Usar LIKE para nombres similares
+   - **Patrones de fechas**: Detectar formatos DD/MM/YYYY, YYYY-MM-DD
+   - **Números y cuantías**: Extraer valores monetarios
+   - **Términos jurídicos**: Detectar tipos de medidas cautelares
+
+2. **Búsqueda Híbrida en ChromaDB**
+   ```python
+   # Pseudocódigo con tolerancia mejorada
+   normalized_filters = normalize_filters(extracted_filters)
+   filtered_chunks = chroma_collection.query(
+       query_texts=[user_query],
+       where=normalized_filters,
+       n_results=10
+   )
+   ```
+
+3. **Generación con Gemini**
+   - Construir prompt con contexto y instrucciones estructuradas
+   - Dejar que Gemini interprete la intención
+   - Generar respuesta apropiada con trazabilidad
+
+## 3. Especificaciones de Diseño - MVP Blindado
+
+### 3.1 Estructura de Datos Simplificada
+
+#### Chunk en ChromaDB:
+```json
+{
+  "id": "RCCI2150725310_chunk_1",
+  "embedding": [vector_512_dimensions],
+  "text": "Texto del chunk...",
+  "metadata": {
+    "document_id": "RCCI2150725310",
+    "chunk_position": 1,
+    "demandante": "NURY WILLELMA ROMERO GOMEZ",
+    "demandado": "MUNICIPIO DE ARAUCA",
+    "tipo_medida": "Embargo",
+    "entidad": "MUNICIPIO DE ARAUCA",
+    "fecha": "2025-07-14",
+    "cuantia": "238.984.000,00",
+    "demandante_normalized": "nury willelma romero gomez",
+    "demandado_normalized": "municipio de arauca"
+  }
 }
 ```
 
-## 🔄 Estrategias de Vectorización
-
-### Vectorización Múltiple
-
-```python
-def create_legal_vectors(chunk):
-    vectors = {}
-    
-    # 1. Vector del contenido principal
-    vectors['content_vector'] = embed_text(chunk.content)
-    
-    # 2. Vector de metadata jurídica
-    legal_text = f"{chunk.metadata['document_type']} {chunk.metadata['jurisdiction']} {chunk.metadata['expedient_number']}"
-    vectors['metadata_vector'] = embed_text(legal_text)
-    
-    # 3. Vector de contexto estructural
-    context_text = " ".join(chunk.context_hierarchy)
-    vectors['context_vector'] = embed_text(context_text)
-    
-    # 4. Vector combinado (para búsqueda híbrida)
-    combined_text = f"{chunk.content} {legal_text} {context_text}"
-    vectors['combined_vector'] = embed_text(combined_text)
-    
-    return vectors
+#### Documento en SQLite (Referencia):
+```sql
+CREATE TABLE documents (
+    id TEXT PRIMARY KEY,
+    filename TEXT,
+    total_chunks INTEGER,
+    indexed_at TIMESTAMP,
+    metadata_json TEXT
+);
 ```
 
-### Modelos de Embedding Especializados
+### 3.2 Configuración de Búsqueda - MVP Blindado
 
+#### ChromaDB:
+- **Dimensiones**: 512 (sentence-transformers)
+- **Distancia**: Coseno
+- **Filtrado**: Metadatos nativos con normalización
+- **Resultados**: Top-10 chunks
+
+#### SQLite:
+- **Búsqueda**: Solo para estadísticas
+- **Relaciones**: Documento-chunks
+- **Backup**: Metadatos canónicos
+
+## 4. Validación y Testing - MVP Blindado
+
+### 4.1 Validación de Embeddings para Textos Legales
+
+#### Prueba Previa de Embeddings:
+**Antes de indexar todo el corpus**:
+1. **Seleccionar 5 documentos representativos** con diferentes tipos de contenido legal
+2. **Crear 10 preguntas de prueba** que cubran diferentes aspectos (nombres, fechas, cuantías, tipos de medida)
+3. **Generar embeddings** con `paraphrase-multilingual-mpnet-base-v2`
+4. **Comparar resultados** con búsquedas manuales esperadas
+5. **Si la precisión es < 70%**, considerar alternativas como `all-MiniLM-L6-v2` o `distiluse-base-multilingual-cased-v2`
+
+#### Criterios de Validación:
+- [ ] Embeddings capturan similitud semántica en textos legales
+- [ ] Búsquedas por nombres devuelven resultados relevantes
+- [ ] Búsquedas por conceptos jurídicos funcionan correctamente
+
+### 4.2 Testing Unitario para Chunking y Búsqueda
+
+#### Archivo de Testing: `run_test_set.py`
 ```python
-# Para documentos jurídicos, usar modelos especializados
-legal_embedding_models = {
-    'content': 'sentence-transformers/all-MiniLM-L6-v2',
-    'legal': 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2',
-    'spanish_legal': 'dccuchile/bert-base-spanish-wwm-cased'
-}
+# Pseudocódigo para testing
+def test_chunking_and_search():
+    # 1. Documentos de prueba
+    test_docs = load_test_documents()
+    
+    # 2. Preguntas de prueba con respuestas esperadas
+    test_questions = [
+        ("¿Cuál es el demandante?", "NURY WILLELMA ROMERO GOMEZ"),
+        ("¿Cuál es la cuantía?", "238.984.000,00"),
+        ("¿Qué tipo de medida es?", "Embargo")
+    ]
+    
+    # 3. Ejecutar chunking y búsqueda
+    for doc in test_docs:
+        chunks = chunk_document(doc)
+        for question, expected in test_questions:
+            result = search_and_answer(question, chunks)
+            assert expected in result
 ```
 
-## 🔍 Estrategias de Retrieval
+#### Métricas de Testing:
+- **Recall@k**: Medir cuántos chunks relevantes se recuperan
+- **Precisión**: Verificar que los chunks recuperados contienen la información buscada
+- **Tiempo de respuesta**: < 3 segundos por consulta
 
-### Búsqueda Híbrida
+### 4.3 Evaluación Cualitativa con 20 Preguntas
 
+#### Set de Preguntas Representativas:
+1. **Preguntas de metadatos** (5 preguntas):
+   - "¿Cuál es el demandante del expediente RCCI2150725310?"
+   - "¿Cuál es la cuantía del embargo?"
+   - "¿En qué fecha se dictó la medida?"
+
+2. **Preguntas de contenido** (10 preguntas):
+   - "¿Cuáles son los hechos principales del caso?"
+   - "¿Qué fundamentos jurídicos se esgrimen?"
+   - "¿Cuáles son las medidas cautelares solicitadas?"
+
+3. **Preguntas de resumen** (5 preguntas):
+   - "Resume el expediente RCCI2150725310"
+   - "¿Cuál es el estado actual del proceso?"
+
+#### Escala de Evaluación:
+- **Correcta**: Respuesta precisa y completa
+- **Parcialmente Correcta**: Respuesta con información relevante pero incompleta
+- **Incorrecta**: Respuesta errónea o sin información útil
+
+**Objetivo MVP**: > 80% de respuestas en categorías "Correcta" o "Parcialmente Correcta"
+
+## 5. Plan de Implementación - MVP Blindado
+
+### 5.1 Fase 1: Validación de Embeddings y Pipeline End-to-End
+
+#### Objetivo Principal:
+**Validar que el sistema RAG funciona de extremo a extremo con embeddings apropiados**
+
+#### Tareas Críticas:
+
+1. **Validación de Embeddings**
+   - Probar `paraphrase-multilingual-mpnet-base-v2` con 5 documentos
+   - Crear y ejecutar 10 preguntas de prueba
+   - Si no funciona bien, probar alternativas
+
+2. **Implementar Chunking con Fallback**
+   - Función de división de texto en chunks
+   - Preservación de metadatos por chunk
+   - Fallback recursivo para chunks grandes
+   - Validación de integridad
+
+3. **Indexación en ChromaDB con Normalización**
+   - Generación de embeddings por chunk
+   - Almacenamiento con metadatos normalizados
+   - Validación de indexación
+
+4. **Flujo de Consulta Único con Trazabilidad**
+   - Extracción de filtros mejorada
+   - Búsqueda híbrida en ChromaDB
+   - Integración con Gemini
+   - Inclusión de fuente en respuestas
+
+5. **Testing Unitario**
+   - Implementar `run_test_set.py`
+   - Validar chunking y búsqueda
+   - Medir Recall@k y precisión
+
+#### Criterios de Éxito Fase 1:
+- [ ] Embeddings validados para textos legales
+- [ ] Chunking funcional con fallback
+- [ ] Búsqueda híbrida operativa
+- [ ] Integración con Gemini funcionando
+- [ ] Testing unitario pasando
+- [ ] Trazabilidad en respuestas
+
+### 5.2 Fase 2: Optimización y Evaluación Cualitativa
+
+#### Objetivo:
+**Mejorar precisión y validar con preguntas reales**
+
+#### Tareas:
+1. **Optimizar Chunking**
+   - Ajustar tamaño de chunks basado en resultados
+   - Mejorar estrategia de división
+   - Optimizar overlap
+
+2. **Mejorar Prompts**
+   - Refinar prompt único con instrucciones estructuradas
+   - Añadir ejemplos específicos para textos legales
+   - Optimizar para diferentes tipos de consulta
+
+3. **Evaluación Cualitativa**
+   - Ejecutar 20 preguntas representativas
+   - Evaluar respuestas según escala definida
+   - Ajustar sistema basado en resultados
+
+### 5.3 Fase 3: Escalabilidad y Monitoreo
+
+#### Objetivo:
+**Preparar para crecimiento y monitoreo**
+
+#### Tareas:
+1. **Monitoreo y Métricas**
+   - Tiempo de respuesta
+   - Precisión de respuestas
+   - Uso de recursos
+
+2. **Optimizaciones de Rendimiento**
+   - Caché de consultas frecuentes
+   - Compresión de embeddings
+   - Indexación incremental
+
+## 6. Configuración Rápida para MVP Blindado
+
+### 6.1 Stack Final Recomendado
+
+**Herramientas Seleccionadas:**
+- **ChromaDB**: Base vectorial + filtrado de metadatos
+- **SQLite**: Base de datos de referencia
+- **Google Gemini 2.0 Flash Lite**: LLM económico
+- **Sentence Transformers**: Embeddings de chunks
+
+### 6.2 Instalación y Configuración
+
+#### Dependencias:
+```bash
+pip install chromadb google-generativeai sentence-transformers pandas
+```
+
+#### Estructura de Archivos:
+```
+mvp/
+├── data/
+│   ├── chroma_db/          # ChromaDB automático
+│   └── legal_docs.db       # SQLite reference
+├── src/
+│   ├── chunker.py          # Función de chunking con fallback
+│   ├── indexer.py          # Indexador con normalización
+│   ├── query_handler.py    # Manejador único con trazabilidad
+│   ├── test_set.py         # Testing unitario
+│   └── config.py
+├── requirements.txt
+└── run_mvp.py
+```
+
+#### Configuración Mínima:
 ```python
-def legal_document_search(query, filters=None):
-    results = []
+# config.py
+GOOGLE_API_KEY = "tu-api-key"
+CSV_PATH = "src/resources/metadata/studio_results_20250715_2237.csv"
+TARGET_PATH = "target/"
+CHUNK_SIZE = 512
+CHUNK_OVERLAP = 50
+EMBEDDING_MODEL = "paraphrase-multilingual-mpnet-base-v2"
+```
+
+### 6.3 Implementación de Chunking con Fallback
+
+#### Función Crítica:
+```python
+def chunk_document(text, metadata, chunk_size=512, overlap=50):
+    """
+    Divide el texto en chunks con metadatos preservados
+    Incluye fallback recursivo para chunks grandes
+    """
+    # Implementar lógica de chunking
+    # Preservar metadatos por chunk
+    # Fallback recursivo por oraciones si es necesario
+    # Generar IDs únicos
+    pass
+```
+
+### 6.4 Flujo de Consulta Blindado
+
+#### Pseudocódigo:
+```python
+def handle_query(query):
+    # 1. Extraer filtros con normalización
+    filters = extract_filters_with_normalization(query)
     
-    # 1. Búsqueda semántica
-    semantic_results = semantic_index.search(
-        query_vector=embed_query(query),
-        top_k=10
+    # 2. Búsqueda híbrida en ChromaDB
+    results = chroma_collection.query(
+        query_texts=[query],
+        where=filters,
+        n_results=10
     )
     
-    # 2. Búsqueda por metadata
-    metadata_results = metadata_index.search(
-        query_vector=embed_query(query),
-        filters=filters,  # Expediente, fecha, jurisdicción
-        top_k=5
-    )
+    # 3. Construir prompt con contexto y trazabilidad
+    context = format_chunks(results['documents'])
+    prompt = build_structured_prompt(context, query)
     
-    # 3. Búsqueda por keywords
-    keyword_results = keyword_index.search(
-        query=extract_legal_keywords(query),
-        top_k=5
-    )
+    # 4. Generar respuesta con Gemini
+    response = gemini.generate(prompt)
     
-    # 4. Combinar y re-rank
-    combined_results = combine_and_rerank(
-        semantic_results, metadata_results, keyword_results
-    )
+    # 5. Añadir información de fuente
+    response += f"\n\nFuente: {document_id}, Chunk {chunk_position} de {total_chunks}"
     
-    return combined_results
+    return response
 ```
 
-### Búsqueda Contextual
+## 7. Ventajas del MVP Blindado
 
-```python
-def contextual_legal_search(query, context_chunk_id=None):
-    # Si tenemos contexto previo, buscar chunks relacionados
-    if context_chunk_id:
-        related_chunks = find_related_chunks(context_chunk_id)
-        context_query = f"{query} {related_chunks}"
-    else:
-        context_query = query
-    
-    return semantic_index.search(context_query)
-```
+### 7.1 Simplicidad:
+- ✅ **Un solo flujo de consulta** - Sin enrutamiento complejo
+- ✅ **Chunking desde el día 1** - Precisión garantizada
+- ✅ **ChromaDB como motor único** - Sin sincronización entre sistemas
+- ✅ **Prompt estructurado** - LLM maneja la interpretación con instrucciones claras
 
-## 🛠️ Implementación Práctica
+### 7.2 Robustez:
+- ✅ **Validación de embeddings** - Prueba previa con textos legales
+- ✅ **Normalización de filtros** - Tolerancia a variaciones en nombres
+- ✅ **Fallback recursivo** - Manejo de chunks grandes
+- ✅ **Trazabilidad** - Fuente visible en respuestas
 
-### Con Pinecone
+### 7.3 Velocidad:
+- ✅ **MVP funcional rápidamente** - Validación rápida
+- ✅ **Testing unitario** - Validación automática
+- ✅ **Sin dependencias externas** - Despliegue inmediato
+- ✅ **Iteración rápida** - Fácil de mejorar
 
-```python
-import pinecone
+### 7.4 Escalabilidad:
+- ✅ **Base sólida** - Fácil migración a arquitectura completa
+- ✅ **Chunking optimizable** - Mejoras incrementales
+- ✅ **Prompts refinables** - Ajustes específicos
 
-# Configurar Pinecone
-pinecone.init(api_key="your_key", environment="your_env")
-index_name = "legal-documents"
+## 8. Aclaraciones y Decisiones Pendientes para el MVP Blindado
 
-# Crear índice
-pinecone.create_index(
-    name=index_name,
-    dimension=384,  # Dimensión del embedding
-    metric="cosine"
-)
+### 8.1 Estrategia para la Extracción de Filtros (`extract_filters()`)
 
-# Insertar chunks
-index = pinecone.Index(index_name)
-index.upsert(vectors=legal_chunks_with_vectors)
-```
+**🤔 Cuestionamiento:** ¿Cómo exactamente se traducirá una consulta en lenguaje natural (ej: "embargos de Nury Romero") a un filtro de base de datos (`{"demandante": "Nury Romero", "tipo_medida": "Embargo"}`)?
 
-### Con ChromaDB
+**✅ Aclaración explícita para el plan:** Para el **MVP**, la función `extract_filters()` se implementará con una estrategia simple basada en **palabras clave y expresiones regulares**. Se crearán patrones para detectar fechas, cuantías y términos jurídicos comunes (ej: "embargo", "demanda"). Para nombres propios, se usará una búsqueda de coincidencia parcial con **normalización** (minúscula, sin tildes). Se reconoce que este método es una simplificación y su mejora será un objetivo para futuras fases.
 
-```python
-import chromadb
+### 8.2 Manejo de "Chunks" de Gran Tamaño
 
-# Crear cliente
-client = chromadb.Client()
+**🤔 Cuestionamiento:** ¿Qué pasará si un párrafo individual dentro de un documento supera el tamaño máximo definido para un chunk (512 tokens)?
 
-# Crear colección
-collection = client.create_collection(
-    name="legal_documents",
-    metadata={"hnsw:space": "cosine"}
-)
+**✅ Aclaración explícita para el plan:** La estrategia de chunking debe incluir un **mecanismo de fallback recursivo**. Si un párrafo excede el `CHUNK_SIZE`, será dividido **recursivamente por oraciones**, hasta que todos los fragmentos resultantes estén por debajo del límite. Esto garantiza que no se pierda información por truncamiento.
 
-# Insertar documentos
-collection.add(
-    documents=[chunk.content for chunk in chunks],
-    metadatas=[chunk.metadata for chunk in chunks],
-    embeddings=[chunk.vector for chunk in chunks],
-    ids=[chunk.id for chunk in chunks]
-)
-```
+### 8.3 Medición de Calidad y Precisión
 
-## 📊 Casos de Uso Específicos
+**🤔 Cuestionamiento:** ¿Cómo se medirá de forma realista el criterio de éxito de "Precisión > 80%" para el MVP?
 
-### Búsqueda por Expediente
+**✅ Aclaración explícita para el plan:** Se reemplazará la métrica cuantitativa por una **evaluación cualitativa**. Se definirá un set de **20 preguntas de prueba representativas**. Las respuestas del sistema serán evaluadas por un experto en el dominio bajo una escala simple (ej: Correcta, Parcialmente Correcta, Incorrecta). El objetivo del MVP es que la mayoría de las respuestas caigan en las dos primeras categorías.
 
-```python
-# Buscar todos los chunks de un expediente específico
-results = vector_db.search(
-    query="expediente IQ051008152850",
-    filter={"expedient_number": "IQ051008152850"}
-)
-```
+### 8.4 Selección del Modelo de Embeddings
 
-### Búsqueda por Referencia Legal
+**🤔 Cuestionamiento:** "Sentence Transformers" es una librería, ¿qué modelo específico se utilizará para generar los embeddings?
 
-```python
-# Buscar chunks que mencionen una ley específica
-results = vector_db.search(
-    query="artículo 123 código civil",
-    filter={"legal_references": {"$contains": "artículo 123"}}
-)
-```
+**✅ Aclaración explícita para el plan:** Para el MVP se utilizará el modelo `paraphrase-multilingual-mpnet-base-v2` por su balance entre rendimiento y soporte multilingüe, incluyendo el español. **Antes de indexar todo el corpus**, se realizará una **validación previa** con 5 documentos representativos y 10 preguntas de prueba para asegurar que el modelo funciona bien con textos legales colombianos. Si no cumple las expectativas, se evaluarán alternativas como `all-MiniLM-L6-v2` o `distiluse-base-multilingual-cased-v2`.
 
-### Búsqueda por Fecha
+### 8.5 Trazabilidad de Respuestas
 
-```python
-# Buscar documentos de un período específico
-results = vector_db.search(
-    query="procedimiento administrativo",
-    filter={"date": {"$gte": "2024-01-01", "$lte": "2024-12-31"}}
-)
-```
+**🤔 Cuestionamiento:** ¿Cómo se garantizará que las respuestas sean trazables a su fuente?
 
-### Búsqueda por Tipo de Documento
+**✅ Aclaración explícita para el plan:** Cada respuesta generada por el sistema incluirá al final la información de fuente en el formato: "Fuente: {document_id}, Chunk {chunk_position} de {total_chunks}". Esto proporciona trazabilidad mínima sin implementar un motor de explicación formal, permitiendo verificar de dónde proviene la información.
 
-```python
-# Buscar solo tablas o headers
-results = vector_db.search(
-    query="información de radicación",
-    filter={"chunk_type": "table"}
-)
-```
+## 9. Criterios de Éxito del MVP Blindado
 
-### Búsqueda por Método de Extracción
+### 9.1 Funcionalidad:
+- [ ] Embeddings validados para textos legales
+- [ ] Chunking funcional con fallback recursivo
+- [ ] Búsqueda híbrida operativa con normalización
+- [ ] Respuestas coherentes a preguntas específicas
+- [ ] Integración con Gemini funcionando
+- [ ] Trazabilidad en respuestas
 
-```python
-# Buscar documentos donde se usó fallback
-results = vector_db.search(
-    query="expediente judicial",
-    filter={"legal_metadata.extraction_method": {"$in": ["filename", "filepath"]}}
-)
+### 9.2 Rendimiento:
+- [ ] Respuestas en menos de 3 segundos
+- [ ] Evaluación cualitativa con 20 preguntas de prueba
+- [ ] Cobertura > 90% de documentos
+- [ ] Testing unitario pasando
 
-# Buscar documentos con alta confianza de OCR
-results = vector_db.search(
-    query="sentencia tribunal",
-    filter={"legal_metadata.confidence_score": {"$gte": 0.8}}
-)
-```
+### 9.3 Escalabilidad:
+- [ ] Capacidad para 1,000+ documentos
+- [ ] Fácil migración a arquitectura completa
+- [ ] Base para iteraciones futuras
 
-### Búsqueda por Calidad de OCR
-
-```python
-# Buscar documentos con buena calidad de OCR
-results = vector_db.search(
-    query="procedimiento administrativo",
-    filter={"legal_metadata.structural_info.ocr_quality": {"$gte": 0.7}}
-)
-```
-
-## ⚡ Consideraciones de Rendimiento
-
-### Optimización de Chunks
-
-#### **A. Tamaño Óptimo de Chunks:**
-- **Textos**: 500-1000 tokens
-- **Tablas**: Chunk único por tabla
-- **Headers**: Chunks separados
-- **Imágenes**: Chunk único con OCR
-
-#### **B. Estrategias de Caching:**
-```python
-# Cache de embeddings
-embedding_cache = {}
-
-def get_cached_embedding(text, model_name):
-    cache_key = f"{hash(text)}_{model_name}"
-    if cache_key not in embedding_cache:
-        embedding_cache[cache_key] = embed_text(text, model_name)
-    return embedding_cache[cache_key]
-```
-
-#### **C. Procesamiento por Lotes:**
-```python
-def batch_process_chunks(chunks, batch_size=100):
-    for i in range(0, len(chunks), batch_size):
-        batch = chunks[i:i + batch_size]
-        vectors = embed_batch(batch)
-        insert_batch_to_vector_db(batch, vectors)
-```
-
-### Monitoreo y Métricas
-
-#### **A. Métricas de Calidad:**
-- **Precisión de Retrieval**: % de chunks relevantes recuperados
-- **Cobertura**: % de información jurídica capturada
-- **Latencia**: Tiempo de respuesta de búsqueda
-
-#### **B. Métricas de Rendimiento:**
-- **Throughput**: Chunks procesados por segundo
-- **Uso de Memoria**: Consumo de recursos
-- **Tiempo de Indexación**: Velocidad de inserción
-
-## 🎯 Ventajas de esta Estrategia
-
-### ✅ Preservación de Estructura Jurídica
-- Encabezados como chunks separados
-- Tablas con estructura preservada
-- Jerarquía de contexto mantenida
-
-### ✅ Metadata Enriquecida con Fallbacks
-- Información jurídica específica
-- Referencias cruzadas
-- Confianza del OCR
-- **Múltiples fuentes de extracción**
-- **Sistema de confianza robusto**
-- **Metadata estructural completa**
-
-### ✅ Optimización para Búsqueda
-- Chunks semánticamente coherentes
-- Contexto preservado
-- Relaciones entre elementos
-- **Filtros por calidad de extracción**
-- **Búsquedas por método de procesamiento**
-
-### ✅ Escalabilidad
-- Procesamiento por lotes
-- Metadata consistente
-- Fácil integración con sistemas RAG
-- **Sistema de fallbacks automático**
-- **Monitoreo de calidad de extracción**
-
-### ✅ Robustez ante OCR Deficiente
-- **Extracción desde nombres de archivo**
-- **Análisis de estructura de carpetas**
-- **Patrones contextuales**
-- **Elementos visuales (sellos, logos)**
-- **Combinación inteligente de fuentes**
-
-## 📈 Implementación en Fases
-
-### Fase 1: Procesamiento Básico
-- [ ] Implementar procesador de JSON DoclingDocument
-- [ ] Crear chunking básico por tipo de elemento
-- [ ] Extraer metadata jurídica básica
-
-### Fase 2: Enriquecimiento Avanzado
-- [ ] Implementar extracción de referencias legales
-- [ ] Crear sistema de contexto jerárquico
-- [ ] Desarrollar vectorización múltiple
-
-### Fase 3: Base de Datos Vectorial
-- [ ] Configurar índices múltiples
-- [ ] Implementar búsqueda híbrida
-- [ ] Optimizar rendimiento
-
-### Fase 4: Integración RAG
-- [ ] Conectar con sistema de generación
-- [ ] Implementar re-ranking
-- [ ] Monitoreo y métricas
-
----
-
-**Nota**: Esta estrategia está diseñada específicamente para documentos jurídicos colombianos procesados con DoclingDocument JSON, optimizando tanto la precisión como el rendimiento para casos de uso legales específicos.
+Esta estrategia blindada aborda todos los puntos críticos identificados y proporciona un MVP funcional, robusto y que valida la viabilidad del sistema RAG de extremo a extremo. Las aclaraciones anteriores eliminan las ambigüedades y establecen decisiones claras para el desarrollo, incluyendo validación previa de embeddings, testing unitario y trazabilidad de respuestas.
