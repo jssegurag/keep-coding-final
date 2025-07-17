@@ -1,4 +1,4 @@
-# Sistema RAG Jurídico - MVP
+# LexAI - Sistema RAG Jurídico
 
 ## Descripción del Proyecto
 
@@ -186,6 +186,7 @@ El sistema se basa en los siguientes principios fundamentales:
 
 ### Tecnologías Utilizadas
 - **Python 3.9+**: Lenguaje principal
+- **FastAPI**: API REST moderna y de alto rendimiento
 - **ChromaDB**: Base de datos vectorial
 - **Gemini API**: Generación de respuestas
 - **Sentence Transformers**: Embeddings multilingües
@@ -235,6 +236,92 @@ python scripts/interactive_query.py
 
 # Evaluar consultas
 python scripts/evaluate_queries.py
+
+# Iniciar API REST
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+## API REST con FastAPI
+
+### Endpoints Disponibles
+
+#### 1. **POST /api/v1/query**
+**Descripción**: Procesa consultas semánticas sobre documentos jurídicos
+
+**Request Body**:
+```json
+{
+  "query": "¿Cuál es el demandante del expediente RCCI2150725310?",
+  "include_sources": true,
+  "include_metadata": true
+}
+```
+
+**Response**:
+```json
+{
+  "response": "El demandante del expediente RCCI2150725310 es...",
+  "sources": [
+    {
+      "document_id": "RCCI2150725310",
+      "chunk_id": "chunk_001",
+      "similarity_score": 0.92
+    }
+  ],
+  "metadata": {
+    "processing_time": 1.35,
+    "total_chunks_searched": 236,
+    "query_type": "extractive"
+  }
+}
+```
+
+#### 2. **GET /api/v1/metadata**
+**Descripción**: Obtiene metadatos del sistema y estadísticas
+
+**Response**:
+```json
+{
+  "total_documents": 236,
+  "total_chunks": 236,
+  "embedding_model": "paraphrase-multilingual-mpnet-base-v2",
+  "system_status": "operational",
+  "last_indexed": "2024-01-15T10:30:00Z"
+}
+```
+
+#### 3. **GET /api/v1/system/health**
+**Descripción**: Verifica el estado de salud del sistema
+
+**Response**:
+```json
+{
+  "status": "healthy",
+  "chroma_connection": "connected",
+  "embedding_model": "loaded",
+  "gemini_api": "available"
+}
+```
+
+### Características de la API
+- **Documentación automática**: Swagger UI disponible en `/docs`
+- **Validación de esquemas**: Pydantic para validación automática
+- **Rate limiting**: Protección contra sobrecarga
+- **CORS habilitado**: Para integración con frontends
+- **Logging estructurado**: Trazabilidad completa de requests
+
+### Ejemplo de Uso con cURL
+```bash
+# Realizar consulta
+curl -X POST "http://localhost:8000/api/v1/query" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "¿Cuál es la cuantía del embargo?",
+    "include_sources": true
+  }'
+
+# Verificar estado del sistema
+curl "http://localhost:8000/api/v1/system/health"
 ```
 
 ## Estructura del Proyecto
@@ -242,6 +329,11 @@ python scripts/evaluate_queries.py
 ```
 keep-coding-final/
 ├── src/
+│   ├── api/               # API REST con FastAPI
+│   │   ├── main.py        # Aplicación principal
+│   │   ├── routes/        # Endpoints de la API
+│   │   ├── models/        # Modelos Pydantic
+│   │   └── services/      # Servicios de la API
 │   ├── chunking/          # División adaptativa de documentos
 │   │   ├── document_chunker.py
 │   │   └── chunk_validator.py
@@ -382,12 +474,16 @@ python scripts/monitor_system.py
 2. **Interfaz de usuario web** para consultas interactivas
 3. **Escalabilidad horizontal** para más documentos
 4. **Monitoreo continuo** en producción
+5. **API Gateway** para gestión de tráfico
+6. **Autenticación y autorización** para la API
 
 ### Mejoras Futuras
 - **Más tipos de documentos** jurídicos
 - **Análisis de sentimientos** en expedientes
 - **Clasificación automática** de casos
 - **Integración con APIs** externas del sistema judicial
+- **Webhooks** para notificaciones en tiempo real
+- **Cache distribuido** para mejorar rendimiento
 
 ### Escalabilidad
 - **Procesamiento de miles** de expedientes
@@ -422,10 +518,11 @@ python scripts/monitor_system.py
 
 ## Conclusión
 
-El **Sistema RAG Jurídico** representa un MVP exitoso que demuestra la viabilidad de aplicar técnicas de Recuperación Augmentada con Generación al dominio jurídico colombiano. 
+**LexAI** representa un MVP exitoso que demuestra la viabilidad de aplicar técnicas de Recuperación Augmentada con Generación al dominio jurídico colombiano. 
 
 ### Logros Principales
 - ✅ **Pipeline completo** funcionando end-to-end
+- ✅ **API REST moderna** con FastAPI
 - ✅ **100% tasa de éxito** en evaluación cualitativa
 - ✅ **Calidad promedio de 4.10/5** puntos
 - ✅ **Tiempo de respuesta < 2 segundos**
@@ -435,4 +532,4 @@ El **Sistema RAG Jurídico** representa un MVP exitoso que demuestra la viabilid
 ### Impacto
 Este sistema proporciona una base sólida para la automatización de consultas jurídicas, mejorando significativamente la eficiencia en el procesamiento de expedientes legales y la accesibilidad a información jurídica compleja.
 
-> **El sistema está completamente validado y listo para uso en producción. Todos los criterios de calidad han sido cumplidos exitosamente.**
+> **LexAI está completamente validado y listo para uso en producción. Todos los criterios de calidad han sido cumplidos exitosamente.**
