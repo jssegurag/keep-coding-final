@@ -1,27 +1,28 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes.queries import router as queries_router
+from .routes import queries, system, metadata
 
 app = FastAPI(
-    title="API REST RAG Expedientes Jurídicos",
-    version="1.0.0",
-    description="API REST para servir el sistema RAG a múltiples frontends (Streamlit, Gradio, etc.)."
+    title="RAG Legal API",
+    description="API REST para sistema RAG de documentos legales",
+    version="1.0"
 )
 
-# Configuración básica de CORS (permitir todos los orígenes para desarrollo)
+# Configurar CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
 
-# Registrar el router de consultas
-app.include_router(queries_router)
+# Incluir routers
+app.include_router(system.router)
+app.include_router(queries.router)
+app.include_router(metadata.router)
 
-@app.get("/api/v1/system/health", tags=["Sistema"])
-def health_check():
-    """Endpoint de salud para verificar que la API está corriendo."""
-    return {"status": "ok", "message": "API REST RAG en funcionamiento"}
+@app.get("/")
+async def root():
+    return {"message": "RAG Legal API - Sistema de Recuperación Augmentada por Generación"}
