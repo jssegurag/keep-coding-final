@@ -29,7 +29,7 @@ class UIConfig:
     
     # Configuraciones específicas para abogados
     max_query_length: int = 500
-    max_results_per_query: int = 10
+    max_results_per_query: int = 25
     max_batch_queries: int = 5
     
     # Configuraciones de paginación
