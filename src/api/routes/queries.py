@@ -169,7 +169,7 @@ async def create_query(
         )
         
         # Guardar en historial
-        query_history_service.add_query(response)
+        query_history_service.add_query_response(response)
         
         return response
         
@@ -396,7 +396,7 @@ async def process_batch_queries(
                 timestamp=query_history_service.get_current_timestamp()
             )
             results.append(response)
-            query_history_service.add_query(response)
+            query_history_service.add_query_response(response)
         
         return BatchQueryResponse(
             results=results,

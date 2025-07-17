@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
@@ -14,23 +14,24 @@ class QueryRequest(BaseModel):
         description="Consulta del usuario en lenguaje natural",
         min_length=1, 
         max_length=500,
-        example="¿Cuál es el demandante del expediente ABC-2024-001?"
+        json_schema_extra={"example": "¿Cuál es el demandante del expediente ABC-2024-001?"}
     )
     n_results: int = Field(
         10, 
         description="Número de resultados a buscar y retornar",
         ge=1, 
         le=50,
-        example=5
+        json_schema_extra={"example": 5}
     )
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query": "¿Cuál es el demandante del expediente ABC-2024-001?",
                 "n_results": 5
             }
         }
+    )
 
 class QueryResponse(BaseModel):
     """
@@ -60,8 +61,8 @@ class QueryResponse(BaseModel):
     )
     timestamp: datetime = Field(..., description="Timestamp de cuando se realizó la consulta")
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query": "¿Cuál es el demandante del expediente?",
                 "response": "Según los documentos analizados, el demandante es Juan Pérez, representado por el abogado María García.",
@@ -89,6 +90,7 @@ class QueryResponse(BaseModel):
                 "timestamp": "2024-01-15T10:30:00Z"
             }
         }
+    )
 
 class BatchQueryRequest(BaseModel):
     """
@@ -100,16 +102,18 @@ class BatchQueryRequest(BaseModel):
     queries: List[QueryRequest] = Field(
         ..., 
         description="Lista de consultas a procesar",
-        min_items=1, 
-        max_items=10,
-        example=[
-            {"query": "¿Cuál es el demandante?", "n_results": 3},
-            {"query": "¿Qué tribunal emitió la sentencia?", "n_results": 2}
-        ]
+        min_length=1, 
+        max_length=10,
+        json_schema_extra={
+            "example": [
+                {"query": "¿Cuál es el demandante?", "n_results": 3},
+                {"query": "¿Qué tribunal emitió la sentencia?", "n_results": 2}
+            ]
+        }
     )
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "queries": [
                     {
@@ -123,6 +127,7 @@ class BatchQueryRequest(BaseModel):
                 ]
             }
         }
+    )
 
 class BatchQueryResponse(BaseModel):
     """
@@ -137,8 +142,8 @@ class BatchQueryResponse(BaseModel):
     failed_queries: int = Field(..., description="Número de consultas que fallaron")
     processing_time: float = Field(..., description="Tiempo total de procesamiento en segundos")
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "results": [
                     {
@@ -154,6 +159,7 @@ class BatchQueryResponse(BaseModel):
                 "processing_time": 1.25
             }
         }
+    )
 
 # Modelos para historial de consultas
 class QueryHistoryItem(BaseModel):
@@ -181,8 +187,8 @@ class QueryHistoryItem(BaseModel):
         description="Filtros aplicados en la consulta"
     )
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "query_123456",
                 "query": "¿Cuál es el demandante?",
@@ -194,6 +200,7 @@ class QueryHistoryItem(BaseModel):
                 "filters_used": {"document_type": "Sentencia"}
             }
         }
+    )
 
 class QueryHistoryResponse(BaseModel):
     """
@@ -208,8 +215,8 @@ class QueryHistoryResponse(BaseModel):
     page_size: int = Field(..., description="Tamaño de la página")
     total_pages: int = Field(..., description="Número total de páginas")
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "queries": [
                     {
@@ -226,6 +233,7 @@ class QueryHistoryResponse(BaseModel):
                 "total_pages": 3
             }
         }
+    )
 
 # Modelos para metadatos de documentos
 class DocumentMetadata(BaseModel):
@@ -253,8 +261,8 @@ class DocumentMetadata(BaseModel):
     total_length: int = Field(..., description="Longitud total del documento en caracteres")
     last_updated: datetime = Field(..., description="Última actualización de los metadatos")
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "document_id": "DOC001",
                 "title": "Sentencia Civil - Juan Pérez vs María García",
@@ -269,6 +277,7 @@ class DocumentMetadata(BaseModel):
                 "last_updated": "2024-01-15T10:30:00Z"
             }
         }
+    )
 
 class DocumentMetadataResponse(BaseModel):
     """
@@ -284,8 +293,8 @@ class DocumentMetadataResponse(BaseModel):
         description="Filtros disponibles para refinar la búsqueda"
     )
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "documents": [
                     {
@@ -304,6 +313,7 @@ class DocumentMetadataResponse(BaseModel):
                 }
             }
         }
+    )
 
 # Modelos para filtros disponibles
 class FilterOption(BaseModel):
@@ -322,8 +332,8 @@ class FilterOption(BaseModel):
     )
     description: Optional[str] = Field(None, description="Descripción del filtro")
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "name": "document_type",
                 "display_name": "Tipo de Documento",
@@ -332,6 +342,7 @@ class FilterOption(BaseModel):
                 "description": "Filtrar por tipo de documento legal"
             }
         }
+    )
 
 class AvailableFiltersResponse(BaseModel):
     """
@@ -343,8 +354,8 @@ class AvailableFiltersResponse(BaseModel):
     filters: List[FilterOption] = Field(..., description="Lista de filtros disponibles")
     total_filters: int = Field(..., description="Número total de filtros disponibles")
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "filters": [
                     {
@@ -362,4 +373,5 @@ class AvailableFiltersResponse(BaseModel):
                 ],
                 "total_filters": 2
             }
-        } 
+        }
+    ) 

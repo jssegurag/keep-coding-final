@@ -1,12 +1,15 @@
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import uuid
-from ..models.queries import QueryHistoryItem, QueryHistoryResponse
+from ..models.queries import QueryHistoryItem, QueryHistoryResponse, QueryResponse
+
+# Variable global para historial (singleton simple)
+_GLOBAL_HISTORY: List[QueryHistoryItem] = []
 
 class QueryHistoryService:
     def __init__(self):
-        # Almacenamiento en memoria para el MVP
-        self._history: List[QueryHistoryItem] = []
+        # Usar la variable global para el historial
+        self._history = _GLOBAL_HISTORY
     
     def add_query(self, query: str, response: str, search_results_count: int, 
                   source_info: Dict[str, Any], entities: Dict[str, Any] = None, 
@@ -27,6 +30,32 @@ class QueryHistoryService:
         
         self._history.append(history_item)
         return query_id
+    
+    def add_query_response(self, query_response: QueryResponse) -> str:
+        """Agregar una QueryResponse al historial."""
+        query_id = str(uuid.uuid4())
+        
+        history_item = QueryHistoryItem(
+            id=query_id,
+            query=query_response.query,
+            response=query_response.response,
+            timestamp=query_response.timestamp,
+            search_results_count=query_response.search_results_count,
+            source_info=query_response.source_info,
+            entities=query_response.entities,
+            filters_used=query_response.filters_used
+        )
+        
+        self._history.append(history_item)
+        return query_id
+    
+    def get_current_timestamp(self) -> datetime:
+        """Obtener timestamp actual."""
+        return datetime.now()
+    
+    def get_query_history(self, page: int = 1, page_size: int = 10) -> QueryHistoryResponse:
+        """Obtener historial de consultas con paginación."""
+        return self.get_history(page=page, page_size=page_size)
     
     def get_history(self, page: int =1, page_size: int = 10, 
                    query_filter: Optional[str] = None) -> QueryHistoryResponse:
@@ -75,6 +104,7 @@ class QueryHistoryService:
                 del self._history[i]
                 return True
         return False    
+    
     def clear_history(self) -> int:
         """Eliminar todo el historial."""
         count = len(self._history)
@@ -102,7 +132,7 @@ class QueryHistoryService:
             reverse=True
         )[:10]
         
-        # Verificar actividad reciente (últimas24as)
+        # Verificar actividad reciente (últimas 24 horas)
         recent_cutoff = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         recent_activity = any(
             item.timestamp >= recent_cutoff 
