@@ -8,7 +8,7 @@ específicas para abogados que procesan oficios jurídicos.
 
 import os
 from typing import Dict, Any
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 @dataclass
 class APIConfig:
@@ -28,8 +28,8 @@ class UIConfig:
     initial_sidebar_state: str = "expanded"
     
     # Configuraciones específicas para abogados
-    max_query_length: int = 500
-    max_results_per_query: int = 25
+    max_query_length: int = 2000  # Aumentado de 500 a 2000 caracteres
+    max_results_per_query: int = 50  # Aumentado de 25 a 50 resultados
     max_batch_queries: int = 5
     
     # Configuraciones de paginación
@@ -55,9 +55,9 @@ class StyleConfig:
 @dataclass
 class AppConfig:
     """Configuración principal de la aplicación."""
-    api: APIConfig = APIConfig()
-    ui: UIConfig = UIConfig()
-    style: StyleConfig = StyleConfig()
+    api: APIConfig = field(default_factory=APIConfig)
+    ui: UIConfig = field(default_factory=UIConfig)
+    style: StyleConfig = field(default_factory=StyleConfig)
     
     # Configuraciones específicas para el dominio legal
     document_types: Dict[str, str] = None

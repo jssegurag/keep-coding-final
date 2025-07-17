@@ -123,9 +123,9 @@ def render_query_form() -> Optional[Dict[str, Any]]:
         # Campo de consulta
         query = st.text_area(
             "Consulta:",
-            placeholder="Ej: ¿Cuál es el demandante del expediente ABC-2024-001?",
+            placeholder="Ej: ¿Cuál es el demandante del expediente ABC-2024-001? ¿Puede proporcionar información detallada sobre las partes involucradas, las fechas importantes del proceso, los montos reclamados y las medidas cautelares solicitadas?",
             max_chars=config.ui.max_query_length,
-            help="Escriba su consulta en lenguaje natural. El sistema entenderá el contexto legal."
+            help=f"Escriba su consulta en lenguaje natural. El sistema entenderá el contexto legal. Máximo {config.ui.max_query_length} caracteres."
         )
         
         # Configuraciones adicionales
@@ -136,8 +136,8 @@ def render_query_form() -> Optional[Dict[str, Any]]:
                 "Número de resultados:",
                 min_value=1,
                 max_value=config.ui.max_results_per_query,
-                value=5,
-                help="Cantidad de resultados a mostrar"
+                value=10,  # Cambiado de 5 a 10 como valor por defecto
+                help=f"Cantidad de resultados a mostrar (máximo {config.ui.max_results_per_query})"
             )
         
         with col2:
@@ -161,34 +161,45 @@ def render_query_form() -> Optional[Dict[str, Any]]:
 
 def render_query_result(result: Dict[str, Any]):
     """
-    Renderizar resultado de consulta.
+    Renderizar resultado de consulta con información semántica detallada.
     
     Args:
         result: Resultado de la consulta de la API
     """
     st.subheader("📋 Resultado de la Consulta")
     
+    # Información de la estrategia de búsqueda
+    search_strategy = result.get('search_strategy', 'unknown')
+    search_results_count = result.get('search_results_count', 0)
+    
+    # Mostrar información de la búsqueda
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Estrategia", search_strategy.replace('_', ' ').title())
+    with col2:
+        st.metric("Chunks Encontrados", search_results_count)
+    with col3:
+        filters_used = result.get('filters_used', {})
+        if filters_used:
+            st.metric("Filtros Aplicados", len(filters_used))
+        else:
+            st.metric("Filtros Aplicados", 0)
+    
     # Respuesta principal
-    st.markdown("### Respuesta")
+    st.markdown("### 🤖 Respuesta Generada")
     st.markdown(f"""
     <div class="legal-card">
         {result.get('response', 'No se encontró respuesta')}
     </div>
     """, unsafe_allow_html=True)
     
-    # Entidades extraídas
-    entities = result.get('entities', {})
-    if entities:
-        st.markdown("### 🏷️ Entidades Identificadas")
-        entity_html = ""
-        for entity_type, value in entities.items():
-            entity_html += f'<span class="entity-tag">{entity_type}: {value}</span>'
-        st.markdown(f'<div>{entity_html}</div>', unsafe_allow_html=True)
+    # Resultados semánticos de la búsqueda
+    st.markdown("### 🔍 Resultados Semánticos de la Búsqueda")
     
     # Información de fuente
     source_info = result.get('source_info', {})
     if source_info:
-        st.markdown("### 📄 Documentos Fuente")
+        st.markdown("#### 📄 Documentos Fuente")
         documents_used = source_info.get('documents_used', [])
         if documents_used:
             for doc in documents_used:
@@ -198,6 +209,60 @@ def render_query_result(result: Dict[str, Any]):
         if confidence:
             st.progress(confidence)
             st.caption(f"Confianza: {confidence:.2%}")
+    
+    # Mostrar chunks encontrados
+    search_results = result.get('search_results', {})
+    if search_results:
+        metadatas = search_results.get('metadatas', [[]])[0] if search_results.get('metadatas') else []
+        documents = search_results.get('documents', [[]])[0] if search_results.get('documents') else []
+        distances = search_results.get('distances', [[]])[0] if search_results.get('distances') else []
+        
+        if metadatas and documents:
+            st.markdown("#### 📝 Chunks Encontrados")
+            
+            for i, (metadata, document, distance) in enumerate(zip(metadatas, documents, distances)):
+                with st.expander(f"Chunk {i+1}: {metadata.get('document_id', 'N/A')} - Score: {1-distance:.3f}"):
+                    col1, col2 = st.columns([2, 1])
+                    
+                    with col1:
+                        st.markdown("**Contenido del Chunk:**")
+                        st.text_area(
+                            f"Contenido {i+1}",
+                            value=document,
+                            height=150,
+                            key=f"chunk_content_{i}"
+                        )
+                    
+                    with col2:
+                        st.markdown("**Metadatos:**")
+                        for key, value in metadata.items():
+                            if key not in ['chunk_id', 'document_id']:
+                                st.write(f"**{key}:** {value}")
+                        
+                        st.markdown("**Score de Similitud:**")
+                        similarity_score = 1 - distance
+                        st.progress(similarity_score)
+                        st.caption(f"{similarity_score:.3%}")
+    
+    # Entidades extraídas
+    entities = result.get('entities', {})
+    if entities:
+        st.markdown("### 🏷️ Entidades Identificadas")
+        entity_html = ""
+        for entity_type, values in entities.items():
+            if isinstance(values, list):
+                for value in values:
+                    entity_html += f'<span class="entity-tag">{entity_type}: {value}</span>'
+            else:
+                entity_html += f'<span class="entity-tag">{entity_type}: {values}</span>'
+        st.markdown(f'<div>{entity_html}</div>', unsafe_allow_html=True)
+    
+    # Filtros utilizados
+    filters_used = result.get('filters_used', {})
+    if filters_used:
+        st.markdown("### 🔧 Filtros Aplicados")
+        for filter_key, filter_value in filters_used.items():
+            st.write(f"**{filter_key}:** {filter_value}")
     
     # Metadatos enriquecidos
     enriched_metadata = result.get('enriched_metadata', [])
@@ -209,6 +274,12 @@ def render_query_result(result: Dict[str, Any]):
                 st.write(f"**Entidades:** {', '.join(metadata.get('extracted_entities', []))}")
                 if 'chunk_used' in metadata:
                     st.text_area("Fragmento utilizado:", metadata['chunk_used'], height=100)
+    
+    # Información temporal
+    timestamp = result.get('timestamp', '')
+    if timestamp:
+        st.markdown("---")
+        st.caption(f"Consulta procesada el: {timestamp}")
 
 def render_documents_table(documents: List[Dict[str, Any]], page: int = 1):
     """
@@ -340,8 +411,8 @@ def render_batch_query_form() -> Optional[List[str]]:
         # Campo para múltiples consultas
         queries_text = st.text_area(
             "Consultas (una por línea):",
-            placeholder="¿Cuál es el demandante?\n¿Qué tribunal emitió la sentencia?\n¿Cuáles son las medidas cautelares?",
-            help=f"Máximo {config.ui.max_batch_queries} consultas por lote"
+            placeholder="¿Cuál es el demandante del expediente RCCI2150725385? ¿Puede proporcionar información detallada sobre las partes involucradas?\n¿Qué tribunal emitió la sentencia y cuáles son las fechas importantes?\n¿Cuáles son las medidas cautelares solicitadas y los montos involucrados?",
+            help=f"Máximo {config.ui.max_batch_queries} consultas por lote, cada una hasta {config.ui.max_query_length} caracteres"
         )
         
         submitted = st.form_submit_button("📦 Procesar Lote")

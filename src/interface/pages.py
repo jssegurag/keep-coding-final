@@ -348,7 +348,7 @@ def render_configuration_tab():
         max_query_length = st.number_input(
             "Longitud máxima de consulta:",
             min_value=100,
-            max_value=1000,
+            max_value=3000,  # Aumentado de 1000 a 3000 para permitir futuras expansiones
             value=config.ui.max_query_length,
             help="Número máximo de caracteres por consulta"
         )
@@ -357,7 +357,7 @@ def render_configuration_tab():
         max_results = st.number_input(
             "Resultados máximos por consulta:",
             min_value=1,
-            max_value=50,
+            max_value=100,  # Aumentado de 50 a 100 para permitir futuras expansiones
             value=config.ui.max_results_per_query,
             help="Número máximo de resultados por consulta"
         )
