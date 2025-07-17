@@ -13,22 +13,22 @@ class QueryRequest(BaseModel):
         ..., 
         description="Consulta del usuario en lenguaje natural",
         min_length=1, 
-        max_length=500,
+        max_length=2000,  # Aumentado de 500 a 2000 caracteres
         json_schema_extra={"example": "¿Cuál es el demandante del expediente ABC-2024-001?"}
     )
     n_results: int = Field(
         10, 
         description="Número de resultados a buscar y retornar",
         ge=1, 
-        le=50,
+        le=50,  # Máximo 50 resultados (ya estaba en 50)
         json_schema_extra={"example": 5}
     )
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "query": "¿Cuál es el demandante del expediente ABC-2024-001?",
-                "n_results": 5
+                "query": "¿Cuál es el demandante del expediente ABC-2024-001? ¿Puede proporcionar información detallada sobre las partes involucradas, las fechas importantes del proceso, los montos reclamados y las medidas cautelares solicitadas? También necesito información sobre el tribunal competente y el estado actual del proceso.",
+                "n_results": 10
             }
         }
     )
@@ -59,6 +59,14 @@ class QueryResponse(BaseModel):
         default_factory=list,
         description="Metadatos enriquecidos de los documentos fuente"
     )
+    search_strategy: str = Field(
+        default="semantic",
+        description="Estrategia de búsqueda utilizada (semantic, document_id_exact, etc.)"
+    )
+    search_results: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Resultados completos de la búsqueda semántica (chunks, metadatos, distancias)"
+    )
     timestamp: datetime = Field(..., description="Timestamp de cuando se realizó la consulta")
 
     model_config = ConfigDict(
@@ -87,6 +95,13 @@ class QueryResponse(BaseModel):
                         "extracted_entities": ["Juan Pérez", "demandante"]
                     }
                 ],
+                "search_strategy": "semantic",
+                "search_results": {
+                    "documents": [["Contenido del chunk 1", "Contenido del chunk 2"]],
+                    "metadatas": [[{"document_id": "DOC001", "chunk_id": "chunk_1"}, {"document_id": "DOC002", "chunk_id": "chunk_2"}]],
+                    "distances": [[0.1, 0.3]],
+                    "total_results": 2
+                },
                 "timestamp": "2024-01-15T10:30:00Z"
             }
         }

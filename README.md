@@ -1,4 +1,4 @@
-# Sistema RAG Jurídico - MVP
+# LexAI - Sistema RAG Jurídico
 
 ## Descripción del Proyecto
 
@@ -186,6 +186,7 @@ El sistema se basa en los siguientes principios fundamentales:
 
 ### Tecnologías Utilizadas
 - **Python 3.9+**: Lenguaje principal
+- **FastAPI**: API REST moderna y de alto rendimiento
 - **ChromaDB**: Base de datos vectorial
 - **Gemini API**: Generación de respuestas
 - **Sentence Transformers**: Embeddings multilingües
@@ -197,7 +198,37 @@ El sistema se basa en los siguientes principios fundamentales:
 ### Requisitos del Sistema
 ```bash
 python 3.9+
+```
+
+### Instalación Completa
+```bash
+# Clonar el repositorio
+git clone <repository-url>
+cd keep-coding-final
+
+# Instalar dependencias
 pip install -r requirements.txt
+
+# Ejecutar el sistema completo (API + UI)
+python run_system.py
+```
+
+### URLs de Acceso
+- **Interfaz de Usuario**: http://localhost:8501
+- **API REST**: http://localhost:8001
+- **Documentación API**: http://localhost:8001/docs
+- **API ReDoc**: http://localhost:8001/redoc
+
+### Ejecutar Componentes Individuales
+
+#### Solo la API REST
+```bash
+uvicorn src.api.main:app --host 0.0.0.0 --port 8001 --reload
+```
+
+#### Solo la Interfaz de Usuario
+```bash
+streamlit run streamlit_app.py
 ```
 
 ### Configuración Inicial
@@ -235,6 +266,163 @@ python scripts/interactive_query.py
 
 # Evaluar consultas
 python scripts/evaluate_queries.py
+
+# Iniciar API REST
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+## 🎨 Interfaz de Usuario Streamlit
+
+### Descripción
+El sistema incluye una interfaz de usuario moderna construida con **Streamlit**, diseñada específicamente para abogados que procesan oficios jurídicos en Colombia. La interfaz proporciona una experiencia intuitiva y eficiente para interactuar con el sistema RAG.
+
+### Características Principales
+
+#### 🏠 Página de Inicio
+- **Información del Sistema**: Estado de conexión y métricas básicas
+- **Descripción del Propósito**: Explicación clara del sistema RAG
+- **Casos de Uso Específicos**: Oficios de embargo, desembargo, sentencias
+- **Estadísticas Rápidas**: Métricas de rendimiento del sistema
+
+#### 🔍 Consultas Semánticas
+- **Consulta Individual**: Formulario para consultas en lenguaje natural
+- **Consultas en Lote**: Procesamiento eficiente de múltiples consultas
+- **Extracción de Entidades**: Identificación automática de personas, organizaciones, fechas
+- **Resultados Enriquecidos**: Información detallada con fuentes y confianza
+
+#### 📚 Gestión de Documentos
+- **Filtros Avanzados**: Por tipo de documento, tribunal, fechas
+- **Paginación**: Navegación eficiente a través de grandes volúmenes
+- **Tabla Interactiva**: Visualización clara de metadatos de documentos
+- **Búsqueda Específica**: Filtros específicos para el dominio legal
+
+#### 📊 Historial de Consultas
+- **Trazabilidad Completa**: Registro de todas las consultas realizadas
+- **Información Detallada**: Respuestas, entidades, fuentes utilizadas
+- **Paginación**: Navegación a través del historial
+- **Análisis de Patrones**: Identificación de consultas frecuentes
+
+#### ⚙️ Configuración del Sistema
+- **Estado del Sistema**: Monitoreo en tiempo real
+- **Configuración de API**: URLs, timeouts, parámetros
+- **Estadísticas Detalladas**: Métricas de rendimiento y uso
+- **Información Técnica**: Detalles de implementación
+
+### Casos de Uso Específicos
+
+#### Oficios de Embargo
+- **Identificación de Demandantes**: Extracción automática de información del demandante
+- **Identificación de Demandados**: Lista completa de personas embargadas
+- **Montos y Bienes**: Información detallada sobre embargos
+- **Tribunales Emisores**: Identificación de la autoridad judicial
+
+#### Oficios de Desembargo
+- **Búsqueda por Cédula**: Localización rápida por número de identificación
+- **Búsqueda por Expediente**: Consulta por número de expediente
+- **Historial de Procesos**: Seguimiento completo del caso
+- **Validación de Información**: Verificación de datos para desembargo
+
+### Arquitectura de la Interfaz
+
+```
+src/interface/
+├── __init__.py          # Inicialización del paquete
+├── config.py            # Configuración de la aplicación
+├── api_client.py        # Cliente para comunicarse con la API
+├── components.py        # Componentes reutilizables de UI
+├── pages.py            # Páginas específicas de cada módulo
+├── app.py              # Aplicación principal
+└── README.md           # Documentación específica
+```
+
+### Tecnologías de la Interfaz
+- **Streamlit**: Framework principal para la interfaz de usuario
+- **CSS Personalizado**: Estilos específicos para el dominio legal
+- **Pandas**: Manipulación y visualización de datos
+- **Requests**: Comunicación con la API REST
+- **Responsive Design**: Adaptable a diferentes tamaños de pantalla
+
+## API REST con FastAPI
+
+### Endpoints Disponibles
+
+#### 1. **POST /api/v1/query**
+**Descripción**: Procesa consultas semánticas sobre documentos jurídicos
+
+**Request Body**:
+```json
+{
+  "query": "¿Cuál es el demandante del expediente RCCI2150725310?",
+  "include_sources": true,
+  "include_metadata": true
+}
+```
+
+**Response**:
+```json
+{
+  "response": "El demandante del expediente RCCI2150725310 es...",
+  "sources": [
+    {
+      "document_id": "RCCI2150725310",
+      "chunk_id": "chunk_001",
+      "similarity_score": 0.92
+    }
+  ],
+  "metadata": {
+    "processing_time": 1.35,
+    "total_chunks_searched": 236,
+    "query_type": "extractive"
+  }
+}
+```
+
+#### 2. **GET /api/v1/metadata**
+**Descripción**: Obtiene metadatos del sistema y estadísticas
+
+**Response**:
+```json
+{
+  "total_documents": 236,
+  "total_chunks": 236,
+  "embedding_model": "paraphrase-multilingual-mpnet-base-v2",
+  "system_status": "operational",
+  "last_indexed": "2024-01-15T10:30:00Z"
+}
+```
+
+#### 3. **GET /api/v1/system/health**
+**Descripción**: Verifica el estado de salud del sistema
+
+**Response**:
+```json
+{
+  "status": "healthy",
+  "chroma_connection": "connected",
+  "embedding_model": "loaded",
+  "gemini_api": "available"
+}
+```
+
+### Características de la API
+- **Documentación automática**: Swagger UI disponible en `/docs`
+- **Validación de esquemas**: Pydantic para validación automática
+- **Rate limiting**: Protección contra sobrecarga
+- **CORS habilitado**: Para integración con frontends
+- **Logging estructurado**: Trazabilidad completa de requests
+
+### Ejemplo de Uso con cURL
+```bash
+# Realizar consulta
+curl -X POST "http://localhost:8000/api/v1/query" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "¿Cuál es la cuantía del embargo?",
+    "include_sources": true
+  }'
+
+# Verificar estado del sistema
+curl "http://localhost:8000/api/v1/system/health"
 ```
 
 ## Estructura del Proyecto
@@ -242,6 +430,19 @@ python scripts/evaluate_queries.py
 ```
 keep-coding-final/
 ├── src/
+│   ├── api/               # API REST con FastAPI
+│   │   ├── main.py        # Aplicación principal
+│   │   ├── routes/        # Endpoints de la API
+│   │   ├── models/        # Modelos Pydantic
+│   │   └── services/      # Servicios de la API
+│   ├── interface/         # Interfaz de usuario Streamlit
+│   │   ├── __init__.py    # Inicialización del paquete
+│   │   ├── config.py      # Configuración de la aplicación
+│   │   ├── api_client.py  # Cliente para comunicarse con la API
+│   │   ├── components.py  # Componentes reutilizables de UI
+│   │   ├── pages.py       # Páginas específicas de cada módulo
+│   │   ├── app.py         # Aplicación principal
+│   │   └── README.md      # Documentación específica
 │   ├── chunking/          # División adaptativa de documentos
 │   │   ├── document_chunker.py
 │   │   └── chunk_validator.py
@@ -261,6 +462,8 @@ keep-coding-final/
 │   ├── run_integration_tests.py
 │   ├── monitor_system.py
 │   └── interactive_query.py
+├── streamlit_app.py       # Aplicación principal de Streamlit
+├── run_system.py          # Script para ejecutar sistema completo
 ├── tests/                 # Tests unitarios e integración
 │   ├── unit/
 │   └── integration/
@@ -382,12 +585,16 @@ python scripts/monitor_system.py
 2. **Interfaz de usuario web** para consultas interactivas
 3. **Escalabilidad horizontal** para más documentos
 4. **Monitoreo continuo** en producción
+5. **API Gateway** para gestión de tráfico
+6. **Autenticación y autorización** para la API
 
 ### Mejoras Futuras
 - **Más tipos de documentos** jurídicos
 - **Análisis de sentimientos** en expedientes
 - **Clasificación automática** de casos
 - **Integración con APIs** externas del sistema judicial
+- **Webhooks** para notificaciones en tiempo real
+- **Cache distribuido** para mejorar rendimiento
 
 ### Escalabilidad
 - **Procesamiento de miles** de expedientes
@@ -422,10 +629,11 @@ python scripts/monitor_system.py
 
 ## Conclusión
 
-El **Sistema RAG Jurídico** representa un MVP exitoso que demuestra la viabilidad de aplicar técnicas de Recuperación Augmentada con Generación al dominio jurídico colombiano. 
+**LexAI** representa un MVP exitoso que demuestra la viabilidad de aplicar técnicas de Recuperación Augmentada con Generación al dominio jurídico colombiano. 
 
 ### Logros Principales
 - ✅ **Pipeline completo** funcionando end-to-end
+- ✅ **API REST moderna** con FastAPI
 - ✅ **100% tasa de éxito** en evaluación cualitativa
 - ✅ **Calidad promedio de 4.10/5** puntos
 - ✅ **Tiempo de respuesta < 2 segundos**
@@ -435,4 +643,4 @@ El **Sistema RAG Jurídico** representa un MVP exitoso que demuestra la viabilid
 ### Impacto
 Este sistema proporciona una base sólida para la automatización de consultas jurídicas, mejorando significativamente la eficiencia en el procesamiento de expedientes legales y la accesibilidad a información jurídica compleja.
 
-> **El sistema está completamente validado y listo para uso en producción. Todos los criterios de calidad han sido cumplidos exitosamente.**
+> **LexAI está completamente validado y listo para uso en producción. Todos los criterios de calidad han sido cumplidos exitosamente.**

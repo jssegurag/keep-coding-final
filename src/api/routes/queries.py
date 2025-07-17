@@ -5,12 +5,17 @@ from ..models.queries import (
     QueryHistoryResponse
 )
 from ..services.query_history_service import QueryHistoryService
+from src.query.query_handler import QueryHandler
 
 router = APIRouter(prefix="/api/v1/queries", tags=["Consultas"])
 
 def get_query_history_service() -> QueryHistoryService:
     """Dependency injection para el servicio de historial de consultas."""
     return QueryHistoryService()
+
+def get_query_handler() -> QueryHandler:
+    """Dependency injection para el manejador de consultas RAG."""
+    return QueryHandler()
 
 @router.post("/", 
     response_model=QueryResponse,
@@ -125,7 +130,8 @@ def get_query_history_service() -> QueryHistoryService:
     })
 async def create_query(
     query_request: QueryRequest,
-    query_history_service: QueryHistoryService = Depends(get_query_history_service)
+    query_history_service: QueryHistoryService = Depends(get_query_history_service),
+    query_handler: QueryHandler = Depends(get_query_handler)
 ) -> QueryResponse:
     """
     Realiza una consulta semántica en documentos legales.
@@ -156,15 +162,23 @@ async def create_query(
     ```
     """
     try:
-        # Simular respuesta RAG (en implementación real, aquí iría la lógica RAG)
-        response = QueryResponse(
+        # Procesar consulta usando el sistema RAG real
+        result = query_handler.handle_query(
             query=query_request.query,
-            response=f"Respuesta simulada para: {query_request.query}",
-            entities={"demandante": "Juan Pérez", "expediente": "ABC-2024-001"},
-            filters_used={"document_type": "Sentencia"},
-            search_results_count=3,
-            source_info={"documents_used": ["DOC001", "DOC002"]},
-            enriched_metadata=[],
+            n_results=query_request.n_results
+        )
+        
+        # Convertir resultado a QueryResponse
+        response = QueryResponse(
+            query=result["query"],
+            response=result["response"],
+            entities=result.get("entities", {}),
+            filters_used=result.get("filters_used", {}),
+            search_results_count=result.get("search_results_count", 0),
+            source_info=result.get("source_info", {}),
+            enriched_metadata=result.get("enriched_metadata", []),
+            search_strategy=result.get("search_strategy", "semantic"),
+            search_results=result.get("search_results", {}),
             timestamp=query_history_service.get_current_timestamp()
         )
         
@@ -355,7 +369,8 @@ async def get_query_history(
     })
 async def process_batch_queries(
     batch_request: BatchQueryRequest,
-    query_history_service: QueryHistoryService = Depends(get_query_history_service)
+    query_history_service: QueryHistoryService = Depends(get_query_history_service),
+    query_handler: QueryHandler = Depends(get_query_handler)
 ) -> BatchQueryResponse:
     """
     Procesa múltiples consultas en un solo lote.
@@ -382,28 +397,59 @@ async def process_batch_queries(
     ```
     """
     try:
-        # Simular procesamiento en lote
+        import time
+        start_time = time.time()
+        
+        # Procesar consultas usando el sistema RAG real
         results = []
+        failed_queries = 0
+        
         for query_req in batch_request.queries:
-            response = QueryResponse(
-                query=query_req.query,
-                response=f"Respuesta simulada para: {query_req.query}",
-                entities={},
-                filters_used={},
-                search_results_count=2,
-                source_info={"documents_used": ["DOC001"]},
-                enriched_metadata=[],
-                timestamp=query_history_service.get_current_timestamp()
-            )
-            results.append(response)
-            query_history_service.add_query_response(response)
+            try:
+                # Procesar consulta individual
+                result = query_handler.handle_query(
+                    query=query_req.query,
+                    n_results=query_req.n_results
+                )
+                
+                # Convertir a QueryResponse
+                response = QueryResponse(
+                    query=result["query"],
+                    response=result["response"],
+                    entities=result.get("entities", {}),
+                    filters_used=result.get("filters_used", {}),
+                    search_results_count=result.get("search_results_count", 0),
+                    source_info=result.get("source_info", {}),
+                    enriched_metadata=result.get("enriched_metadata", []),
+                    timestamp=query_history_service.get_current_timestamp()
+                )
+                
+                results.append(response)
+                query_history_service.add_query_response(response)
+                
+            except Exception as e:
+                failed_queries += 1
+                # Crear respuesta de error
+                error_response = QueryResponse(
+                    query=query_req.query,
+                    response=f"Error procesando consulta: {str(e)}",
+                    entities={},
+                    filters_used={},
+                    search_results_count=0,
+                    source_info={},
+                    enriched_metadata=[],
+                    timestamp=query_history_service.get_current_timestamp()
+                )
+                results.append(error_response)
+        
+        processing_time = time.time() - start_time
         
         return BatchQueryResponse(
             results=results,
             total_queries=len(batch_request.queries),
-            successful_queries=len(results),
-            failed_queries=0,
-            processing_time=1.25
+            successful_queries=len(results) - failed_queries,
+            failed_queries=failed_queries,
+            processing_time=processing_time
         )
         
     except Exception as e:
