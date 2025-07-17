@@ -354,6 +354,7 @@ Respuesta:
                 "source_info": source_info,
                 "enriched_metadata": enriched_metadata,
                 "search_strategy": search_strategy,
+                "search_results": search_results,  # Incluir los resultados completos de la búsqueda
                 "timestamp": datetime.now().isoformat()
             }
 

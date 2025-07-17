@@ -177,6 +177,8 @@ async def create_query(
             search_results_count=result.get("search_results_count", 0),
             source_info=result.get("source_info", {}),
             enriched_metadata=result.get("enriched_metadata", []),
+            search_strategy=result.get("search_strategy", "semantic"),
+            search_results=result.get("search_results", {}),
             timestamp=query_history_service.get_current_timestamp()
         )
         

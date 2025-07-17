@@ -28,8 +28,8 @@ class UIConfig:
     initial_sidebar_state: str = "expanded"
     
     # Configuraciones específicas para abogados
-    max_query_length: int = 500
-    max_results_per_query: int = 25
+    max_query_length: int = 2000  # Aumentado de 500 a 2000 caracteres
+    max_results_per_query: int = 50  # Aumentado de 25 a 50 resultados
     max_batch_queries: int = 5
     
     # Configuraciones de paginación

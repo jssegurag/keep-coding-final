@@ -162,8 +162,16 @@ class APIClient:
         if len(queries) > self.config.ui.max_batch_queries:
             raise Exception(f"Máximo {self.config.ui.max_batch_queries} consultas por lote")
         
+        # Convertir lista de strings a lista de QueryRequest objects
+        query_requests = []
+        for query in queries:
+            query_requests.append({
+                "query": query,
+                "n_results": 5  # Valor por defecto para consultas en lote
+            })
+        
         data = {
-            "queries": queries
+            "queries": query_requests
         }
         
         return self._make_request("POST", self.config.api.queries_endpoint + "/batch", data=data)
