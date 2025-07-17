@@ -1,17 +1,17 @@
 # Sistema RAG Jurídico - MVP
 
-## 🎯 Descripción del Proyecto
+## Descripción del Proyecto
 
 Este proyecto implementa un sistema de **Recuperación Augmentada con Generación (RAG)** específicamente diseñado para el dominio jurídico colombiano. El sistema procesa expedientes legales reales y responde consultas en lenguaje natural con trazabilidad completa, proporcionando respuestas precisas y fundamentadas.
 
-### 🎯 Objetivo Principal
+### Objetivo Principal
 Desarrollar un MVP (Minimum Viable Product) que demuestre la viabilidad de aplicar técnicas RAG al procesamiento de documentos jurídicos, validando la capacidad del sistema para:
 - Procesar expedientes legales complejos
 - Responder consultas semánticas con precisión
 - Mantener trazabilidad completa de las fuentes
 - Escalar a volúmenes significativos de documentos
 
-## 🏗️ Fundamentos y Arquitectura
+## Fundamentos y Arquitectura
 
 ### Principios de Diseño
 El sistema se basa en los siguientes principios fundamentales:
@@ -51,7 +51,7 @@ El sistema se basa en los siguientes principios fundamentales:
   - Capacidad de razonamiento jurídico
   - Respuestas estructuradas y coherentes
 
-## 📋 Fases de Desarrollo
+## Fases de Desarrollo
 
 ### Fase 1: Setup y Entorno (Paso 1) ✅
 **Objetivo**: Establecer la base técnica del proyecto
@@ -137,9 +137,9 @@ El sistema se basa en los siguientes principios fundamentales:
 - Tests end-to-end del pipeline completo
 - Métricas de calidad específicas para dominio jurídico
 
-## ✅ Estado Actual del Proyecto
+## Estado Actual del Proyecto
 
-### 🏆 Resultados de Validación
+### Resultados de Validación
 - **Tasa de éxito**: 100% (20/20 preguntas exitosas)
 - **Calidad promedio**: 4.10/5 puntos
 - **Tiempo de respuesta**: 1.35 segundos promedio
@@ -147,12 +147,12 @@ El sistema se basa en los siguientes principios fundamentales:
 - **Documentos procesados**: 236 chunks indexados
 - **Expedientes reales probados**: 5 documentos jurídicos
 
-### 📊 Distribución de Calidad
+### Distribución de Calidad
 - **Excelente (4-5)**: 15 preguntas (75%)
 - **Aceptable (2-3)**: 4 preguntas (20%)
 - **Pobre (1-2)**: 1 pregunta (5%)
 
-### 🔍 Componentes Validados
+### Componentes Validados
 - ✅ **Chunker**: Funcionando correctamente
 - ✅ **Indexer**: 236 chunks indexados exitosamente
 - ✅ **Query Handler**: Procesamiento de consultas semánticas
@@ -160,7 +160,7 @@ El sistema se basa en los siguientes principios fundamentales:
 - ✅ **Búsqueda semántica**: Resultados relevantes
 - ✅ **Evaluación cualitativa**: 20 preguntas con datos reales
 
-## 🏗️ Arquitectura del Sistema
+## Arquitectura del Sistema
 
 ### Componentes Principales
 
@@ -192,7 +192,7 @@ El sistema se basa en los siguientes principios fundamentales:
 - **Pandas**: Procesamiento de datos
 - **Pytest**: Testing automatizado
 
-## 🚀 Instalación y Configuración
+## Instalación y Configuración
 
 ### Requisitos del Sistema
 ```bash
@@ -237,7 +237,7 @@ python scripts/interactive_query.py
 python scripts/evaluate_queries.py
 ```
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 keep-coding-final/
@@ -277,7 +277,7 @@ keep-coding-final/
     └── 06_integration_testing.md
 ```
 
-## 🔍 Testing y Validación
+## Testing y Validación
 
 ### Tests de Integración
 ```bash
@@ -304,7 +304,7 @@ python -m pytest tests/unit/ -v
 4. **Completitud** (información suficiente)
 5. **Estructura** (respuesta bien organizada)
 
-## 📊 Métricas de Rendimiento
+## Métricas de Rendimiento
 
 ### Pipeline End-to-End
 - **Tiempo de respuesta**: < 2 segundos promedio
@@ -318,7 +318,7 @@ python -m pytest tests/unit/ -v
 - **Query Handler**: Procesamiento semántico exitoso
 - **Búsqueda**: Resultados relevantes y precisos
 
-## 🎯 Casos de Uso Soportados
+## Casos de Uso Soportados
 
 ### Tipos de Consultas
 1. **Extractivas**: "¿Cuál es el demandante del expediente RCCI2150725310?"
@@ -333,7 +333,7 @@ python -m pytest tests/unit/ -v
 - **XXXX2150725299**: [Documento adicional]
 - **XXXX2150725311**: [Documento adicional]
 
-## 🔧 Configuración Avanzada
+## Configuración Avanzada
 
 ### Parámetros de Chunking
 ```python
@@ -356,7 +356,7 @@ INCLUDE_METADATA = True    # Incluir metadatos
 MAX_RESPONSE_LENGTH = 500  # Longitud máxima
 ```
 
-## 📝 Logs y Monitoreo
+## Logs y Monitoreo
 
 ### Archivos de Log
 - `logs/chunking.log`: Proceso de división de documentos
@@ -375,7 +375,7 @@ python scripts/monitor_system.py
 - Estado de logs
 - Métricas de rendimiento
 
-## 🚀 Próximos Pasos y Roadmap
+## Próximos Pasos y Roadmap
 
 ### Despliegue en Producción
 1. **Optimización de prompts** para casos específicos
@@ -395,7 +395,7 @@ python scripts/monitor_system.py
 - **Cache inteligente** para consultas frecuentes
 - **Optimización de embeddings** para dominio específico
 
-## 🤝 Contribución
+## Contribución
 
 ### Guías de Contribución
 1. **Fork del repositorio**
@@ -412,7 +412,7 @@ python scripts/monitor_system.py
 
 
 
-## 🙏 Agradecimientos
+## Agradecimientos
 
 - **Equipo de docentes keepcoding** Por sus conocimientos y guías de alto valor para la formación profesional y su aporte a la comunidad de inteligencia artificial mediante sus cursos.
 
@@ -420,7 +420,7 @@ python scripts/monitor_system.py
 
 ---
 
-## 🎉 Conclusión
+## Conclusión
 
 El **Sistema RAG Jurídico** representa un MVP exitoso que demuestra la viabilidad de aplicar técnicas de Recuperación Augmentada con Generación al dominio jurídico colombiano. 
 
