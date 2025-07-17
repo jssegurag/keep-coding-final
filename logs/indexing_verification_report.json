@@ -1,0 +1,90 @@
+{
+  "report_timestamp": "2025-07-16T16:32:42.922278",
+  "indexing_verification": {
+    "timestamp": "2025-07-16T16:32:40.500903",
+    "collection_name": "legal_documents",
+    "total_documents_csv": 125,
+    "total_chunks_indexed": 236,
+    "indexing_complete": true,
+    "collection_stats": {
+      "total_chunks": 236,
+      "collection_name": "legal_documents",
+      "sample_metadata_keys": [
+        "chunk_id",
+        "chunk_position",
+        "chunk_size",
+        "ciudad",
+        "demandante",
+        "demandante_normalized",
+        "document_id",
+        "document_path",
+        "end_token",
+        "id",
+        "indexed_at",
+        "numero_identificacion",
+        "start_token",
+        "tipo_identificacion",
+        "token_count",
+        "total_chunks"
+      ],
+      "last_updated": "2025-07-16T16:32:40.496918"
+    },
+    "sample_metadata_keys": [
+      "chunk_id",
+      "chunk_position",
+      "chunk_size",
+      "ciudad",
+      "demandante",
+      "demandante_normalized",
+      "document_id",
+      "document_path",
+      "end_token",
+      "id",
+      "indexed_at",
+      "numero_identificacion",
+      "start_token",
+      "tipo_identificacion",
+      "token_count",
+      "total_chunks"
+    ],
+    "last_updated": "2025-07-16T16:32:40.496918"
+  },
+  "search_verification": {
+    "timestamp": "2025-07-16T16:32:42.922243",
+    "test_queries": [
+      "demandante",
+      "resolución",
+      "documento legal",
+      "proceso judicial"
+    ],
+    "search_results": {
+      "demandante": {
+        "total_found": 5,
+        "has_results": true,
+        "query": "demandante"
+      },
+      "resolución": {
+        "total_found": 5,
+        "has_results": true,
+        "query": "resolución"
+      },
+      "documento legal": {
+        "total_found": 5,
+        "has_results": true,
+        "query": "documento legal"
+      },
+      "proceso judicial": {
+        "total_found": 5,
+        "has_results": true,
+        "query": "proceso judicial"
+      }
+    },
+    "search_functional": true
+  },
+  "overall_status": {
+    "indexing_complete": true,
+    "search_functional": true,
+    "system_ready": true
+  },
+  "recommendations": []
+}

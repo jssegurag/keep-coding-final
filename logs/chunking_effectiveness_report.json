@@ -1,0 +1,508 @@
+{
+  "summary": {
+    "total_documents": 125,
+    "successful_documents": 125,
+    "failed_documents": 0,
+    "success_rate": 100.0
+  },
+  "chunking_metrics": {
+    "avg_success_rate": 98.10222222222222,
+    "avg_chunks_per_document": 1.888,
+    "avg_tokens_per_chunk": 344.5107111111111,
+    "total_chunks_created": 236,
+    "chunks_within_size": 209,
+    "chunks_with_overlap": 111
+  },
+  "chunk_distribution": {
+    "small_chunks": 1,
+    "medium_chunks": 20,
+    "large_chunks": 215,
+    "total_chunks": 236
+  },
+  "entities_extracted": {
+    "names": 6604,
+    "dates": 606,
+    "amounts": 64,
+    "legal_terms": 368,
+    "document_numbers": 47,
+    "court_names": 79
+  },
+  "complexity_analysis": {
+    "avg_sentence_length": 15.78245402679157,
+    "avg_word_length": 6.08933393695528,
+    "lexical_diversity": 0.6149762102962968,
+    "total_words": 85736,
+    "total_sentences": 6849
+  },
+  "failed_documents": [],
+  "sample_results": [
+    {
+      "document_id": "RCCI2150725382D.pdf",
+      "status": "success",
+      "text_length": 2582,
+      "cleaned_length": 2560,
+      "total_chunks": 1,
+      "total_tokens": 417,
+      "avg_tokens_per_chunk": 417.0,
+      "success_rate": 100.0,
+      "chunks_within_size": 1,
+      "chunks_with_overlap": 0,
+      "errors": 0,
+      "warnings": 0,
+      "small_chunks": 0,
+      "medium_chunks": 0,
+      "large_chunks": 1,
+      "overlap_percentage": 0.0,
+      "complexity": {
+        "avg_sentence_length": 7.851063829787234,
+        "avg_word_length": 5.940379403794038,
+        "lexical_diversity": 0.6747967479674797,
+        "total_words": 369,
+        "total_sentences": 47
+      },
+      "entities": {
+        "names": [
+          "JUZGADO PRIMERO CIVIL DEL CIRCUITO TURBACO",
+          "BOLÍVAR",
+          "WQJ",
+          "EMBARGO LABORAL",
+          "BANCO BOGOTÁ",
+          "BANCO POPULAR",
+          "BANCO PICHINCHA",
+          "BANCO CORPBANCA",
+          "BANCOLOMBIA S",
+          "BANCO BBVA",
+          "BANCO DE OCCIDENTE",
+          "BANCO HSBC",
+          "BANCO ITAU",
+          "BANCO FALABELLA",
+          "BANCO CAJA SOCIAL S",
+          "BANCO DAVIVIENDA",
+          "BANCO COLPATRIA RED MULTIBANCA",
+          "BANCO AGRARIO DE COLOMBIA",
+          "BANCO A",
+          "V VILLAS",
+          "PROCESO ESPECIAL DE EJECUCION LABORAL\nDTE",
+          "PROTECCIÓN S",
+          "NIT",
+          "DDO",
+          "INSTITUTO MUNICIPAL DE DEPORTE DE ARJONA",
+          "NIT",
+          "RAD",
+          "INSTITUTO MUNICIPAL DE DEPORTE DE ARJONA",
+          "NIT",
+          "SIETE MILLONES NOVECIENTOS NOVENTA Y TRES MIL OCHENTA PESOS M",
+          "CTE",
+          "L Y S",
+          "PROTECCIÓN S",
+          "NIT",
+          "DILSON CASTELLON CAICEDO",
+          "TURBACO BOLÍVAR",
+          "CALLE EL PROGRESO",
+          "URL"
+        ],
+        "dates": [
+          "17/11/2022",
+          "17 de noviembre de 2022",
+          "19 de septiembre de 2022",
+          "00 de 1993"
+        ],
+        "amounts": [
+          "$7.99",
+          "$7.993.080"
+        ],
+        "legal_terms": [
+          "demandante",
+          "demandado",
+          "embargo",
+          "juzgado"
+        ],
+        "document_numbers": [],
+        "court_names": [
+          "JUZGADO PRIMERO CIVIL DEL CIRCUITO TURBACO"
+        ]
+      },
+      "sample_chunks": [
+        {
+          "id": "RCCI2150725382D.pdf_chunk_1",
+          "position": 1,
+          "token_count": 417,
+          "text_preview": "JUZGADO PRIMERO CIVIL DEL CIRCUITO TURBACO-BOLÍVAR\nOficio No. WQJ 0753-2021/00300\nTurbaco, 17 de noviembre de 2022.\nEMBARGO LABORAL\nSeñores\nBANCO BOGO..."
+        }
+      ]
+    },
+    {
+      "document_id": "RCCI2150725360.pdf",
+      "status": "success",
+      "text_length": 1543,
+      "cleaned_length": 1541,
+      "total_chunks": 1,
+      "total_tokens": 230,
+      "avg_tokens_per_chunk": 230.0,
+      "success_rate": 100.0,
+      "chunks_within_size": 1,
+      "chunks_with_overlap": 0,
+      "errors": 0,
+      "warnings": 0,
+      "small_chunks": 0,
+      "medium_chunks": 0,
+      "large_chunks": 1,
+      "overlap_percentage": 0.0,
+      "complexity": {
+        "avg_sentence_length": 13.1875,
+        "avg_word_length": 6.308056872037914,
+        "lexical_diversity": 0.7393364928909952,
+        "total_words": 211,
+        "total_sentences": 16
+      },
+      "entities": {
+        "names": [
+          "SECRETARIA DE HACIENDA",
+          "COMUNICACIÓN ORDEN DE DESEMBARGO",
+          "DAVIPLATA",
+          "RADICADO",
+          "LAURA ISABEL PUERTA URREGO\nREFERENCIA",
+          "PROCESO ADMINISTRATIVO DE COBRO MUNICIPIO DE SABANETA",
+          "NIT",
+          "SILVIO CAMILO VARGAS AVNEDAÑO",
+          "ACCIONANTE",
+          "ACCIONADO",
+          "IDENTIFICACIÓN",
+          "RADICADO",
+          "SILVIO CAMILO VARGAS AVNEDAÑO",
+          "DEL",
+          "DE JUNIO DE",
+          "ORDENAR EL LEVANTAMIENTO DE LA MEDIDA CAUTELAR DE EMBARGO DE PRODUCTOS FINANCIEROS",
+          "SILVIO CAMILO VARGAS AVNEDAÑO",
+          "CÉDULA DE CIUDADANIA",
+          "DE NOVIEMBRE DE",
+          "NOTIFIQUESE Y CÚMPLASE\nESTEFANIA JIMVENEZ BEDOYA"
+        ],
+        "dates": [
+          "1123-24-03"
+        ],
+        "amounts": [],
+        "legal_terms": [
+          "embargo",
+          "medida cautelar"
+        ],
+        "document_numbers": [
+          "CE2025084682"
+        ],
+        "court_names": []
+      },
+      "sample_chunks": [
+        {
+          "id": "RCCI2150725360.pdf_chunk_1",
+          "position": 1,
+          "token_count": 230,
+          "text_preview": "SECRETARIA DE HACIENDA Subdirección de Cobranzas COMUNICACIÓN ORDEN DE DESEMBARGO\n1123-24-03-04\nSeñores:\nDAVIPLATA Jefe de Cuentas. notificacionesjudi..."
+        }
+      ]
+    },
+    {
+      "document_id": "RCCI2150725406.pdf",
+      "status": "success",
+      "text_length": 2420,
+      "cleaned_length": 2420,
+      "total_chunks": 1,
+      "total_tokens": 361,
+      "avg_tokens_per_chunk": 361.0,
+      "success_rate": 100.0,
+      "chunks_within_size": 1,
+      "chunks_with_overlap": 0,
+      "errors": 0,
+      "warnings": 0,
+      "small_chunks": 0,
+      "medium_chunks": 0,
+      "large_chunks": 1,
+      "overlap_percentage": 0.0,
+      "complexity": {
+        "avg_sentence_length": 8.631578947368421,
+        "avg_word_length": 6.3810975609756095,
+        "lexical_diversity": 0.7164634146341463,
+        "total_words": 328,
+        "total_sentences": 38
+      },
+      "entities": {
+        "names": [
+          "REPUBLICA DE COLOMBIA\nJUZGADO TERCERO DE PEQUEÑAS CAUSAS Y COMPETENCIAS MÚLTIPLES CARTAGENA",
+          "BOLIVAR",
+          "PROCESO",
+          "EJECUTIVO",
+          "SIN SAE RADICACIÓN",
+          "DEMANDANTE",
+          "AZURE PROPIEDAD HORIZONTAL DEMANDADO",
+          "YULIS PAOLA BAENA PATERNINA ACTUACION",
+          "LIBRA MANDAMIENTO",
+          "BANCOLOMBIA S",
+          "BANCO BBVA",
+          "BANCO DAVIVIENDA S",
+          "BANCO FALABELLA S",
+          "QUINIO",
+          "DECRÉTESE",
+          "YULIS PAOLA BAENA PATERNINA",
+          "LIMITESE",
+          "SERGIO BUELVAS HENAO\nSECRETARIO",
+          "URL"
+        ],
+        "dates": [
+          "19/06/2025",
+          "20 de marzo de 2025",
+          "20 de marzo de 2025"
+        ],
+        "amounts": [],
+        "legal_terms": [
+          "demandante",
+          "demandado",
+          "embargo",
+          "juzgado"
+        ],
+        "document_numbers": [],
+        "court_names": [
+          "REPUBLICA DE COLOMBIA\nJUZGADO",
+          "JUZGADO TERCERO DE PEQUE"
+        ]
+      },
+      "sample_chunks": [
+        {
+          "id": "RCCI2150725406.pdf_chunk_1",
+          "position": 1,
+          "token_count": 361,
+          "text_preview": "REPUBLICA DE COLOMBIA\nJUZGADO TERCERO DE PEQUEÑAS CAUSAS Y COMPETENCIAS MÚLTIPLES CARTAGENA - BOLIVAR\nCra. 65 No 30-35, esquina. Barrio Las Delicias, ..."
+        }
+      ]
+    },
+    {
+      "document_id": "RCCI2150725412.pdf",
+      "status": "success",
+      "text_length": 10513,
+      "cleaned_length": 10436,
+      "total_chunks": 3,
+      "total_tokens": 1495,
+      "avg_tokens_per_chunk": 498.3333333333333,
+      "success_rate": 66.66666666666666,
+      "chunks_within_size": 2,
+      "chunks_with_overlap": 2,
+      "errors": 1,
+      "warnings": 0,
+      "small_chunks": 0,
+      "medium_chunks": 0,
+      "large_chunks": 3,
+      "overlap_percentage": 66.66666666666666,
+      "complexity": {
+        "avg_sentence_length": 5.687203791469194,
+        "avg_word_length": 7.6975,
+        "lexical_diversity": 0.4125,
+        "total_words": 1200,
+        "total_sentences": 211
+      },
+      "entities": {
+        "names": [
+          "NOTIFICACIÓN",
+          "AUTO DE TERMINACIÓN DEL PROCESO DEL PROCESO RAD",
+          "NOTIFICACIÓN",
+          "AUTO DE TERMINACIÓN DEL PROCESO DEL PROCESO RAD",
+          "EMBARGOS",
+          "ALEJANDRO YAIMA JIMENEZ",
+          "NOTA",
+          "SOLO RESPONDER SI SE ENCUENTRAN RELACIONADOS EN EL AUTO",
+          "DE LO CONTRARIO HACER CASO OMISO PARA EVITAR EL SPAM",
+          "SECRETARIA DE EDUCACION DEPARTAMENTAL DE LA GUAJIRA",
+          "GERENTE BANCO DE",
+          "BOGOTÁ",
+          "BANCOLOMBIA",
+          "OCCIDENTE",
+          "COLPATRIA",
+          "BSCS",
+          "BANCAMIA",
+          "PICHINCHA",
+          "SUDAMERIS",
+          "ITAU",
+          "FINANDINA",
+          "CITIBANK",
+          "FALABELLA",
+          "AV VILLAS",
+          "AGRARIO",
+          "BBVA",
+          "DAVIVIENDA Y POPULAR",
+          "LEYDER FARYD RODRIGUEZ PINTO",
+          "III",
+          "NOTIFICACIÓN",
+          "AUTO DE TERMINACIÓN DEL PROCESO DEL PROCESO RAD",
+          "AVISO DE CONFIDENCIALIDAD",
+          "TERMINACIÓN X PAGO",
+          "EMBARGOS",
+          "ALEJANDRO YAIMA JIMENEZ",
+          "NOTA",
+          "SOLO RESPONDER SI SE ENCUENTRAN RELACIONADOS EN EL AUTO",
+          "DE LO CONTRARIO HACER CASO OMISO PARA EVITAR EL SPAM",
+          "NOTIFICACIÓN",
+          "AUTO DE TERMINACIÓN DEL PROCESO DEL PROCESO RAD",
+          "PROMIGAS SA ESP",
+          "BANCO DE BOGOTA",
+          "BANCO BBVA COLOMBIA S",
+          "BANCO DAVIVIENDA",
+          "BANCO A",
+          "V VILLAS",
+          "BANCO OCCIDENTE",
+          "BANCO POPULAR",
+          "BACOLOMBIA S",
+          "BANCOOMEVA",
+          "BANCO AGRARIO DE COLOMBIA S",
+          "LEYDER FARYD RODRIGUEZ PINTO",
+          "III",
+          "AVISO DE CONFIDENCIALIDAD",
+          "TERMINACIÓN X PAGO",
+          "TIPO DE PROCESO\nEJECUTIVO SINGULAR\nDEMANDANTE\nBANCO DE BOGOTA",
+          "NIT",
+          "DEMANDADO\nJHON JADER MEZA PAEZ",
+          "RADICACIÓN",
+          "RESUELVE",
+          "PRIMERO",
+          "SEGUNDO",
+          "TERCERO",
+          "BANCO DE BOGOTA",
+          "BANCO BBVA COLOMBIA S",
+          "BANCO DAVIVIENDA",
+          "BANCO A",
+          "V VILLAS",
+          "BANCO OCCIDENTE",
+          "BANCO POPULAR",
+          "BACOLOMBIA S",
+          "BANCOOMEVA",
+          "BANCO AGRARIO DE COLOMBIA S",
+          "TESORERO Y",
+          "O PAGADOR PROMIGAS SA ESP",
+          "CUARTO",
+          "QUINTO",
+          "SEXTO",
+          "TYBA",
+          "NOTIFÍQUESE Y CÚMPLASE\nTERÁMENES RAFAEL GÓMEZ HENRÍQUEZ",
+          "TRGH",
+          "URL"
+        ],
+        "dates": [
+          "08/07/2025",
+          "14 de julio de 2025",
+          "5 de enero de 2009",
+          "14 de julio de 2025",
+          "5 de enero de 2009"
+        ],
+        "amounts": [],
+        "legal_terms": [
+          "demandante",
+          "demandado",
+          "embargo",
+          "juez",
+          "juzgado"
+        ],
+        "document_numbers": [
+          "ac57122253"
+        ],
+        "court_names": []
+      },
+      "sample_chunks": [
+        {
+          "id": "RCCI2150725412.pdf_chunk_1",
+          "position": 1,
+          "token_count": 509,
+          "text_preview": "15/7/25, 8:19\nCorreo de Banco Davivienda - NOTIFICACIÓN - AUTO DE TERMINACIÓN DEL PROCESO DEL PROCESO RAD 2023-00309\nOscar Daniel Rincon Cardona <osda..."
+        },
+        {
+          "id": "RCCI2150725412.pdf_chunk_2",
+          "position": 2,
+          "token_count": 521,
+          "text_preview": "os, a no ser que exista una autorización explícita Antes de imprimir este correo, considere si es realmente necesario hacerlo, recuerde que puede guar..."
+        },
+        {
+          "id": "RCCI2150725412.pdf_chunk_3",
+          "position": 3,
+          "token_count": 465,
+          "text_preview": "cuerde que puede guardarlo como un archivo digital --\nHas recibido este mensaje porque estás suscrito al grupo \"Notificaciones Judiciales\" de Grupos d..."
+        }
+      ]
+    },
+    {
+      "document_id": "RCCI2150725374.pdf",
+      "status": "success",
+      "text_length": 2617,
+      "cleaned_length": 2609,
+      "total_chunks": 1,
+      "total_tokens": 426,
+      "avg_tokens_per_chunk": 426.0,
+      "success_rate": 100.0,
+      "chunks_within_size": 1,
+      "chunks_with_overlap": 0,
+      "errors": 0,
+      "warnings": 0,
+      "small_chunks": 0,
+      "medium_chunks": 0,
+      "large_chunks": 1,
+      "overlap_percentage": 0.0,
+      "complexity": {
+        "avg_sentence_length": 6.684210526315789,
+        "avg_word_length": 5.850393700787402,
+        "lexical_diversity": 0.6692913385826772,
+        "total_words": 381,
+        "total_sentences": 57
+      },
+      "entities": {
+        "names": [
+          "OFICIO",
+          "BANCO DE BOGOTÁ S",
+          "BANCO POPULAR S",
+          "A\nITAÚ COLOMBIA S",
+          "BANCOLOMBIA S",
+          "A\nBANCO CITIBANK",
+          "COLOMBIA\nBANCO GNB SUDAMERIS S",
+          "A\nBANCO DE OCCIDENTE S",
+          "A\nBANCO CAJA SOCIAL S",
+          "A\nBANCO DAVIVIENDA S",
+          "A\nCOLPATRIA S",
+          "A\nBANCO AGRARIO DE COLOMBIA S",
+          "A\nBANCO COMERCIAL AV VILLAS S",
+          "A\nBANCAMÍA S",
+          "A\nBANCO W S",
+          "A\nBANCO COOMEVA S",
+          "A\nBANCO FINANDINA S",
+          "A\nBANCO FALABELLA S",
+          "A\nBANCO PICHINCHA S",
+          "A\nBANCO SANTANDER\nBANCO MUNDO MUJER\nBANCO BBVA\nNEQUI\nBANCOLOMBIA A LA MANO\nDALE",
+          "AVAL S",
+          "DIGITAL\nDAVIPLATA",
+          "NIT",
+          "EMBARGO",
+          "CUENTAS",
+          "CDTS",
+          "JOHANNA CATHERINE PULIDO",
+          "URL"
+        ],
+        "dates": [
+          "27/06/2025",
+          "20 de junio de 2025"
+        ],
+        "amounts": [
+          "$98.34",
+          "$98.340.683"
+        ],
+        "legal_terms": [
+          "demandante",
+          "demandado",
+          "embargo",
+          "juzgado"
+        ],
+        "document_numbers": [],
+        "court_names": []
+      },
+      "sample_chunks": [
+        {
+          "id": "RCCI2150725374.pdf_chunk_1",
+          "position": 1,
+          "token_count": 426,
+          "text_preview": "Rama Judicial del Poder Público\nJuzgado 40 Civil Municipal de Bogotá\nRepública de Colombia\ncmpl40bt@cendoj.ramajudicial.gov.co Tel. 3532666 Ext. 70340..."
+        }
+      ]
+    }
+  ]
+}

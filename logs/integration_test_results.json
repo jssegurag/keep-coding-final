@@ -1,0 +1,394 @@
+{
+  "end_to_end": {
+    "timestamp": "2025-07-16T18:30:40.702135",
+    "components": {
+      "chunker": {
+        "success": true,
+        "chunks_created": 1,
+        "validation": {
+          "total_chunks": 1,
+          "chunks_within_size": 1,
+          "chunks_with_overlap": 0,
+          "errors": [],
+          "warnings": [],
+          "success_rate": 100.0
+        }
+      },
+      "indexer": {
+        "success": true,
+        "stats": {
+          "total_chunks": 236,
+          "collection_name": "legal_documents",
+          "sample_metadata_keys": [
+            "chunk_id",
+            "chunk_position",
+            "chunk_size",
+            "ciudad",
+            "demandante",
+            "demandante_normalized",
+            "document_id",
+            "document_path",
+            "end_token",
+            "id",
+            "indexed_at",
+            "numero_identificacion",
+            "start_token",
+            "tipo_identificacion",
+            "token_count",
+            "total_chunks"
+          ],
+          "last_updated": "2025-07-16T18:30:40.709239"
+        }
+      },
+      "query_handler": {
+        "success": true,
+        "initialized": true
+      }
+    },
+    "pipeline": {
+      "success": true,
+      "response_time": 0.6134359836578369,
+      "has_response": true,
+      "has_source": true,
+      "search_results": 10
+    },
+    "errors": [],
+    "indexing": {
+      "success": true,
+      "total_chunks": 236,
+      "collection_name": "legal_documents",
+      "has_data": true
+    },
+    "search": {
+      "success": true,
+      "results": [
+        {
+          "query": "demandante",
+          "success": true,
+          "results_found": 3
+        },
+        {
+          "query": "embargo",
+          "success": true,
+          "results_found": 3
+        },
+        {
+          "query": "medida cautelar",
+          "success": true,
+          "results_found": 3
+        }
+      ]
+    },
+    "queries": {
+      "success": true,
+      "results": [
+        {
+          "query": "\u00bfCu\u00e1l es el demandante?",
+          "success": true,
+          "response_time": 1.945054292678833,
+          "has_response": true,
+          "has_source": true
+        },
+        {
+          "query": "\u00bfQu\u00e9 tipo de medida es?",
+          "success": true,
+          "response_time": 0.8181979656219482,
+          "has_response": true,
+          "has_source": true
+        },
+        {
+          "query": "embargo",
+          "success": true,
+          "response_time": 0.6152617931365967,
+          "has_response": true,
+          "has_source": true
+        }
+      ]
+    }
+  },
+  "qualitative_evaluation": {
+    "timestamp": "2025-07-16T18:30:45.016413",
+    "total_questions": 20,
+    "questions": [
+      {
+        "id": 1,
+        "question": "\u00bfCu\u00e1l es el demandante del expediente RCCI2150725310?",
+        "category": "metadatos",
+        "type": "extraction",
+        "response": "El demandante del expediente RCCI2150725310 es el Municipio de Arauca.\n\n\nFuente: RCCI2150725310, Chunk 1 de 1\nMetadatos relevantes: {'chunk_id': 'RCCI2150725310_chunk_1', 'chunk_position': 1, 'chunk_size': 1299, 'ciudad': 'Arauca', 'correo': 'contactenos@arauca arauca.gov.co', 'demandante': 'NURY WILLELMA ROMERO GOMEZ', 'demandante_normalized': 'nury willelma romero gomez', 'departamento': 'Arauca', 'direccion': 'Cra. 24 entre calles 18 y 20', 'document_id': 'RCCI2150725310', 'document_path': 'idp/2025/7/15/1752614131.584725/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725310.pdf', 'end_token': 0, 'id': 225835, 'indexed_at': '2025-07-16T16:03:13.282346', 'numero_identificacion': '68300399', 'start_token': 0, 'tipo_identificacion': 'CC', 'token_count': 197, 'total_chunks': 1}\nCoincidencias: {'document_numbers': [{'entity': 'RCCI2150725310', 'metadata_field': 'chunk_id', 'value': 'RCCI2150725310_chunk_1'}, {'entity': 'RCCI2150725310', 'metadata_field': 'document_id', 'value': 'RCCI2150725310'}, {'entity': 'RCCI2150725310', 'metadata_field': 'document_path', 'value': 'idp/2025/7/15/1752614131.584725/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725310.pdf'}]}",
+        "quality_score": 5,
+        "response_time": 0.545529842376709,
+        "success": true,
+        "has_source": true,
+        "search_results": 1,
+        "real_document": "RCCI2150725310"
+      },
+      {
+        "id": 2,
+        "question": "\u00bfQui\u00e9n es el demandante en el expediente RCCI2150725309?",
+        "category": "metadatos",
+        "type": "extraction",
+        "response": "El demandante en el expediente RCCI2150725309 es NELLY DUARTE VARGAS, con c\u00e9dula de ciudadan\u00eda n\u00famero 60.324.383.\n\n\nFuente: RCCI2150725309, Chunk 1 de 1\nMetadatos relevantes: {'chunk_id': 'RCCI2150725309_chunk_1', 'chunk_position': 1, 'chunk_size': 1748, 'ciudad': 'C\u00facuta', 'demandante': 'NELLY DUARTE VARGAS', 'demandante_normalized': 'nelly duarte vargas', 'departamento': 'NORTE DE SANTANDER', 'document_id': 'RCCI2150725309', 'document_path': 'idp/2025/7/15/1752614130.80476/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725309.pdf', 'end_token': 0, 'id': 225836, 'indexed_at': '2025-07-16T16:03:13.452135', 'numero_identificacion': '60.324.383', 'resoluciones': \"['54001400301220240086400', '399', '2025-2025', '1954-2024']\", 'start_token': 0, 'tipo_entidad': 'Judicial', 'tipo_identificacion': 'CC', 'token_count': 271, 'total_chunks': 1}\nCoincidencias: {'document_numbers': [{'entity': 'RCCI2150725309', 'metadata_field': 'chunk_id', 'value': 'RCCI2150725309_chunk_1'}, {'entity': 'RCCI2150725309', 'metadata_field': 'document_id', 'value': 'RCCI2150725309'}, {'entity': 'RCCI2150725309', 'metadata_field': 'document_path', 'value': 'idp/2025/7/15/1752614130.80476/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725309.pdf'}]}",
+        "quality_score": 5,
+        "response_time": 0.7289819717407227,
+        "success": true,
+        "has_source": true,
+        "search_results": 1,
+        "real_document": "RCCI2150725309"
+      },
+      {
+        "id": 3,
+        "question": "\u00bfCu\u00e1l es la cuant\u00eda del embargo?",
+        "category": "metadatos",
+        "type": "extraction",
+        "response": "No se encuentra en el expediente proporcionado.\n\n\nFuente: unknown, Chunk 0 de 0",
+        "quality_score": 2,
+        "response_time": 0.43900108337402344,
+        "success": true,
+        "has_source": true,
+        "search_results": 0,
+        "real_document": null
+      },
+      {
+        "id": 4,
+        "question": "\u00bfEn qu\u00e9 fecha se dict\u00f3 la medida cautelar?",
+        "category": "metadatos",
+        "type": "extraction",
+        "response": "No se encuentra en el expediente proporcionado.\n\n\nFuente: unknown, Chunk 0 de 0",
+        "quality_score": 2,
+        "response_time": 0.6059339046478271,
+        "success": true,
+        "has_source": true,
+        "search_results": 0,
+        "real_document": null
+      },
+      {
+        "id": 5,
+        "question": "\u00bfQu\u00e9 tipo de medida se solicit\u00f3?",
+        "category": "metadatos",
+        "type": "extraction",
+        "response": "Se solicitaron las siguientes medidas:\n\n*   **Levantamiento de medidas cautelares:** Se orden\u00f3 el levantamiento de las medidas cautelares en varios casos, como en el proceso administrativo de cobro coactivo por Impuesto de Industria y Comercio y su Complementario Avisos y Tableros (RCCI2150725421), en el proceso ejecutivo por sumas de dinero (RCCI2150725309) y en relaci\u00f3n a los procesos administrativos coactivos de la Subsecretar\u00eda de Rentas de la Secretar\u00eda de Hacienda Departamental del Atl\u00e1ntico (RCCI2150725423).\n*   **Embargo:** Se orden\u00f3 un embargo por un valor de DOSCIENTOS DIEZ MILLONES DE PESOS ($210 000 000,00) M/CTE (RCCI2150725410). Tambi\u00e9n se menciona la inscripci\u00f3n de medidas de embargo (RCCI2150725408).\n*   **Limitaci\u00f3n de Medida:** Se limit\u00f3 la medida a la suma de ($ 33 064 540) TREINTA Y TRES MILLONES SESENTA Y CUATRO MIL QUINIENTOS CUARENTA PESOS MCTE (RCCI2150725408).\n\n\nFuente: RCCI2150725421, Chunk 2 de 2",
+        "quality_score": 5,
+        "response_time": 2.174355983734131,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 6,
+        "question": "\u00bfCu\u00e1les son los hechos principales del caso?",
+        "category": "contenido",
+        "type": "comprehension",
+        "response": "Bas\u00e1ndome en el contexto proporcionado, los hechos principales de los casos son:\n\n*   **Caso 1:** Un proceso de Cobro Coactivo Administrativo del Municipio de Ibagu\u00e9 por Impuesto Predial Unificado (2009-2011). Se ordena el levantamiento de medidas cautelares. Se ordena oficiar a entidades bancarias y/o financieras del Municipio.\n*   **Caso 2:** Proceso Ejecutivo por Sumas de Dinero, donde se ordena la terminaci\u00f3n del proceso y el levantamiento de medidas cautelares.\n*   **Caso 3:** Proceso Ejecutivo Laboral. Se solicita requerir a entidades bancarias.\n*   **Caso 4:** Proceso Ejecutivo singular de m\u00ednima cuant\u00eda.\n*   **Caso 5:** Un juzgado emite oficios a entidades bancarias (Banco GNB Sudameris, Banco Popular, Banco Finandina, Banco Agrario de Colombia, Banco AV Villas, Banco Davivienda, Banco Falabella)\n*   **Otros:** Se identifican comunicaciones con Banco Davivienda en relaci\u00f3n con procesos ejecutivos.\n*   **Caso 6:** Notificaci\u00f3n de auto que requiere en un proceso.\n*   **Caso 7:** Proceso de cobro coactivo por impuesto predial unificado.\n\n\nFuente: RCCI2150725349, Chunk 1 de 1",
+        "quality_score": 5,
+        "response_time": 2.196096897125244,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 7,
+        "question": "\u00bfQu\u00e9 fundamentos jur\u00eddicos se esgrimen?",
+        "category": "contenido",
+        "type": "comprehension",
+        "response": "Los fundamentos jur\u00eddicos que se esgrimen son:\n\n*   **Ley 527/99 y el decreto reglamentario 2364/12:** Se menciona en el contexto en relaci\u00f3n con la validez jur\u00eddica de la firma electr\u00f3nica.\n*   **Art\u00edculo 599 del C\u00f3digo General del Proceso:** Se cita en relaci\u00f3n con los requisitos para el embargo y retenci\u00f3n de dineros en cuentas bancarias.\n*   **Art\u00edculo 111 del C\u00f3digo General del Proceso (C. G. del P) y el art\u00edculo 11 de la ley 2213 de 2022:** Se menciona en relaci\u00f3n con la notificaci\u00f3n de las providencias y la abstenci\u00f3n de requerir documentos adicionales.\n*   **Estatuto Tributario:** Se menciona en relaci\u00f3n con las responsabilidades de pago en el contexto de infracciones de tr\u00e1nsito.\n\n\nFuente: RCCI2150725324, Chunk 2 de 2",
+        "quality_score": 5,
+        "response_time": 1.809030294418335,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 8,
+        "question": "\u00bfCu\u00e1les son las medidas cautelares solicitadas?",
+        "category": "contenido",
+        "type": "comprehension",
+        "response": "Las medidas cautelares solicitadas incluyen:\n\n*   Embargo de bienes (muebles e inmuebles) y remanentes.\n*   Embargo de cuotas sociales, derechos y partes de inter\u00e9s en sociedades.\n*   Levantamiento de medidas cautelares (en algunos casos, como el del contribuyente que pag\u00f3 sus obligaciones tributarias).\n\n\nFuente: RCCI2150725421, Chunk 2 de 2",
+        "quality_score": 5,
+        "response_time": 1.1261370182037354,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 9,
+        "question": "\u00bfQu\u00e9 pruebas se presentaron?",
+        "category": "contenido",
+        "type": "comprehension",
+        "response": "No se encuentra en el expediente proporcionado.\n\n\nFuente: RCCI2150725349, Chunk 1 de 1",
+        "quality_score": 2,
+        "response_time": 0.5109891891479492,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 10,
+        "question": "\u00bfCu\u00e1l es el estado actual del proceso?",
+        "category": "contenido",
+        "type": "comprehension",
+        "response": "El estado actual de los procesos es el siguiente:\n\n*   **RCC2150725343:** Se ordena la terminaci\u00f3n del proceso de Cobro Coactivo y el levantamiento de la medida cautelar para MAR OSPINA DE HERNANDEZ (Nit No 28914152) en el expediente No IYC-2017-21474. La notificaci\u00f3n se realizar\u00e1 mediante correo electr\u00f3nico.\n*   **RCCI2150725337:** C\u00famplase por Leidy Yised S\u00e1nchez Caicedo, Funcionario Ejecutor Cobro Coactivo, respecto al STO PREDIAL UNIFICADO.\n*   **RCCI2150725421:** Se orden\u00f3 levantar las medidas cautelares en contra del contribuyente (no especificado) por estar al d\u00eda con los pagos de Industria y Comercio y su Complementario Avisos y Tableros.\n*   **RCCI2150725320, RCCI2150725321, RCCI2150725351:** El Instituto Departamental de Tr\u00e1nsito y Transporte del Meta adelanta procesos de Cobro Administrativo Coactivo contra CLAUDIA SHIRLEY SARMIENTO GONZALEZ, MARIA LUISA REY ESCAMILLA y JOSE GREGORIO ARAGON VILLA, respectivamente. Se notifican a BANCO DAVIVIENDA.\n*   **RCCI2150725347, RCCI2150725367:** C\u00famplase por Leidy Yised S\u00e1nchez Caicedo, Funcionario Ejecutor - Cobro Coactivo. Documento proyectado por Yaneth Vargas Angel, Fiscalizadora.\n*   **RCCI2150725309:** Se ordena la terminaci\u00f3n del proceso Ejecutivo por Sumas de Dinero, radicado 54001400301220240086400, entre NELLY DUARTE VARGAS y VICTOR EDUARDO RIVERA MORENO. Se orden\u00f3 el levantamiento de las medidas cautelares.\n\n\nFuente: RCCI2150725343, Chunk 2 de 2",
+        "quality_score": 5,
+        "response_time": 3.357942819595337,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 11,
+        "question": "\u00bfQui\u00e9n es el juez del caso?",
+        "category": "contenido",
+        "type": "extraction",
+        "response": "No se puede determinar el juez del caso bas\u00e1ndome \u00fanicamente en los fragmentos proporcionados. Se mencionan varios juzgados, pero no se especifica a qu\u00e9 caso se refiere la pregunta.\n\n\nFuente: RCCI2150725331, Chunk 1 de 1",
+        "quality_score": 5,
+        "response_time": 0.7216429710388184,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 12,
+        "question": "\u00bfCu\u00e1les son las pretensiones del demandante?",
+        "category": "contenido",
+        "type": "comprehension",
+        "response": "Bas\u00e1ndome en el contexto proporcionado, no es posible determinar las pretensiones del demandante.\n\n\nFuente: RCCI2150725413, Chunk 5 de 5",
+        "quality_score": 5,
+        "response_time": 0.6177828311920166,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 13,
+        "question": "\u00bfQu\u00e9 argumentos presenta la defensa?",
+        "category": "contenido",
+        "type": "comprehension",
+        "response": "No se encuentra en el expediente proporcionado.\n\n\nFuente: RCCI2150725349, Chunk 1 de 1",
+        "quality_score": 2,
+        "response_time": 0.5091660022735596,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 14,
+        "question": "\u00bfCu\u00e1l es el n\u00famero de expediente?",
+        "category": "contenido",
+        "type": "extraction",
+        "response": "El n\u00famero de expediente es 138363103001-2021-00300-00.\n\n\nFuente: RCCI2150725382E, Chunk 2 de 3",
+        "quality_score": 4,
+        "response_time": 0.6690428256988525,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 15,
+        "question": "\u00bfQu\u00e9 documentos se adjuntaron?",
+        "category": "contenido",
+        "type": "comprehension",
+        "response": "El documento RCCI2150725382E adjunta un archivo (52 KB) titulado \"OFICIO 106 DE 2025, POR MEDIO DEL CUAL SE NOTIFICA AUTO QUE REQUIERE - PROCESO 13836310300120210030000\".\n\n\nFuente: RCCI2150725413, Chunk 2 de 5",
+        "quality_score": 4,
+        "response_time": 0.8813068866729736,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 16,
+        "question": "Resume el expediente RCCI2150725310",
+        "category": "resumen",
+        "type": "summary",
+        "response": "**Resumen del Expediente RCCI2150725310**\n\n*   **Fecha:** 14 de julio de 2025\n*   **Remitente:** Municipio de Arauca\n*   **Destinatario:** Gerente del Banco Davivienda, Arauca\n*   **Asunto:** Levantamiento de medida cautelar en contra de NURY WILLELMA ROMERO GOMEZ (CC 68300399).\n*   **Referencia:** N\u00b0 34579/3458/34582/34583/34584\n*   **Descripci\u00f3n:** El Municipio de Arauca informa sobre el pago total de la obligaci\u00f3n contra\u00edda por NURY WILLELMA ROMERO GOMEZ con la Alcald\u00eda Municipal de Arauca.\n\n\nFuente: RCCI2150725310, Chunk 1 de 1\nMetadatos relevantes: {'chunk_id': 'RCCI2150725310_chunk_1', 'chunk_position': 1, 'chunk_size': 1299, 'ciudad': 'Arauca', 'correo': 'contactenos@arauca arauca.gov.co', 'demandante': 'NURY WILLELMA ROMERO GOMEZ', 'demandante_normalized': 'nury willelma romero gomez', 'departamento': 'Arauca', 'direccion': 'Cra. 24 entre calles 18 y 20', 'document_id': 'RCCI2150725310', 'document_path': 'idp/2025/7/15/1752614131.584725/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725310.pdf', 'end_token': 0, 'id': 225835, 'indexed_at': '2025-07-16T16:03:13.282346', 'numero_identificacion': '68300399', 'start_token': 0, 'tipo_identificacion': 'CC', 'token_count': 197, 'total_chunks': 1}\nCoincidencias: {'document_numbers': [{'entity': 'RCCI2150725310', 'metadata_field': 'chunk_id', 'value': 'RCCI2150725310_chunk_1'}, {'entity': 'RCCI2150725310', 'metadata_field': 'document_id', 'value': 'RCCI2150725310'}, {'entity': 'RCCI2150725310', 'metadata_field': 'document_path', 'value': 'idp/2025/7/15/1752614131.584725/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725310.pdf'}]}",
+        "quality_score": 5,
+        "response_time": 1.5936129093170166,
+        "success": true,
+        "has_source": true,
+        "search_results": 1,
+        "real_document": "RCCI2150725310"
+      },
+      {
+        "id": 17,
+        "question": "Resume el expediente RCCI2150725309",
+        "category": "resumen",
+        "type": "summary",
+        "response": "**Resumen del Expediente RCCI2150725309**\n\n*   **Ciudad:** C\u00facuta\n*   **Fecha:** 01 de julio de 2025\n*   **Tipo de documento:** Oficio\n*   **N\u00famero de oficio:** 399\n*   **Proceso:** EJECUTIVO POR SUMAS DE DINERO\n*   **Radicado:** 54001400301220240086400\n*   **Demandante:** NELLY DUARTE VARGAS C.C. 60.324.383\n*   **Demandado:** VICTOR EDUARDO RIVERA MORENO\n*   **Asunto:** SE ORDENA LA TERMINACION PROCESO\n*   **Decisi\u00f3n:** Se orden\u00f3 el levantamiento de las medidas cautelares.\n*   **Referencia a Auto Interlocutorio:** Auto Interlocutorio 2025 de fecha 27 de junio de 2025 y Auto Interlocutorio 1954.\n\n\nFuente: RCCI2150725309, Chunk 1 de 1\nMetadatos relevantes: {'chunk_id': 'RCCI2150725309_chunk_1', 'chunk_position': 1, 'chunk_size': 1748, 'ciudad': 'C\u00facuta', 'demandante': 'NELLY DUARTE VARGAS', 'demandante_normalized': 'nelly duarte vargas', 'departamento': 'NORTE DE SANTANDER', 'document_id': 'RCCI2150725309', 'document_path': 'idp/2025/7/15/1752614130.80476/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725309.pdf', 'end_token': 0, 'id': 225836, 'indexed_at': '2025-07-16T16:03:13.452135', 'numero_identificacion': '60.324.383', 'resoluciones': \"['54001400301220240086400', '399', '2025-2025', '1954-2024']\", 'start_token': 0, 'tipo_entidad': 'Judicial', 'tipo_identificacion': 'CC', 'token_count': 271, 'total_chunks': 1}\nCoincidencias: {'document_numbers': [{'entity': 'RCCI2150725309', 'metadata_field': 'chunk_id', 'value': 'RCCI2150725309_chunk_1'}, {'entity': 'RCCI2150725309', 'metadata_field': 'document_id', 'value': 'RCCI2150725309'}, {'entity': 'RCCI2150725309', 'metadata_field': 'document_path', 'value': 'idp/2025/7/15/1752614130.80476/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725309.pdf'}]}",
+        "quality_score": 5,
+        "response_time": 2.095710039138794,
+        "success": true,
+        "has_source": true,
+        "search_results": 1,
+        "real_document": "RCCI2150725309"
+      },
+      {
+        "id": 18,
+        "question": "Resume el expediente RCCI2150725307",
+        "category": "resumen",
+        "type": "summary",
+        "response": "**Resumen del Expediente RCCI2150725307**\n\nEl expediente RCCI2150725307 se refiere a un proceso administrativo de cobro coactivo llevado a cabo por la Alcald\u00eda Distrital de Cartagena de Indias, espec\u00edficamente dentro del macroproceso de Gesti\u00f3n de Hacienda, y el subproceso de Tesorer\u00eda de Cobro Coactivo.\n\n**Partes Involucradas:**\n\n*   **Contribuyente:** CIELO LORDUY ESCORCIA, identificada con C.C. No. 33150499, propietaria del inmueble con referencia catastral No. 01-05-0760-0008-000 y folio de matr\u00edcula inmobiliaria No. 060-69929.\n\n**Decisiones Administrativas:**\n\n*   **Terminaci\u00f3n del Proceso de Cobro Coactivo:** Se dispone la terminaci\u00f3n del proceso de cobro coactivo adelantado contra CIELO LORDUY ESCORCIA, dado que no registra deuda pendiente.\n*   **Levantamiento de Medida Cautelar:** Se ordena el levantamiento de la medida cautelar de embargo a cuentas bancarias en contra de CIELO LORDUY ESCORCIA.\n\n**Medidas Cautelares:**\n\n*   Embargo de cuentas bancarias.\n\n**Contexto Temporal:**\n\n*   **Fecha del Formato:** 31/07/2023\n*   **Fecha del Oficio de Levantamiento de Medida Cautelar:** 10 de junio de 2025.\n*   **Vigencias Fiscales:** 2020 a 2022.\n\n**Entidades Bancarias Notificadas:**\n\nSe notific\u00f3 a las siguientes entidades bancarias: BANCO BANCOLOMBIA, BANCO FALABELLA, BANCO BOGOT\u00c1, BANCO ITA\u00da, BANCO OCCIDENTE, BANCO GNB SUDAMERIS, BANCO BBVA, BANCO POPULAR, BANCO DAVIVIENDA, BANCO PICHINCHA.\n\n\nFuente: RCCI2150725307, Chunk 2 de 3\nMetadatos relevantes: {'chunk_id': 'RCCI2150725307_chunk_2', 'chunk_position': 2, 'chunk_size': 3182, 'ciudad': 'Cartagena', 'demandante': 'ALCALD\u00cdA DISTRITAL DE CARTAGENA DE INDIAS', 'demandante_normalized': 'alcaldia distrital de cartagena de indias', 'document_id': 'RCCI2150725307', 'document_path': 'idp/2025/7/15/1752614132.29904/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725307.pdf', 'end_token': 0, 'id': 225837, 'indexed_at': '2025-07-16T16:03:13.474384', 'start_token': 0, 'token_count': 508, 'total_chunks': 3}\nCoincidencias: {'document_numbers': [{'entity': 'RCCI2150725307', 'metadata_field': 'chunk_id', 'value': 'RCCI2150725307_chunk_2'}, {'entity': 'RCCI2150725307', 'metadata_field': 'document_id', 'value': 'RCCI2150725307'}, {'entity': 'RCCI2150725307', 'metadata_field': 'document_path', 'value': 'idp/2025/7/15/1752614132.29904/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725307.pdf'}]}\nMetadatos relevantes: {'chunk_id': 'RCCI2150725307_chunk_1', 'chunk_position': 1, 'chunk_size': 3254, 'ciudad': 'Cartagena', 'demandante': 'ALCALD\u00cdA DISTRITAL DE CARTAGENA DE INDIAS', 'demandante_normalized': 'alcaldia distrital de cartagena de indias', 'document_id': 'RCCI2150725307', 'document_path': 'idp/2025/7/15/1752614132.29904/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725307.pdf', 'end_token': 0, 'id': 225837, 'indexed_at': '2025-07-16T16:03:13.474372', 'start_token': 0, 'token_count': 512, 'total_chunks': 3}\nCoincidencias: {'document_numbers': [{'entity': 'RCCI2150725307', 'metadata_field': 'chunk_id', 'value': 'RCCI2150725307_chunk_1'}, {'entity': 'RCCI2150725307', 'metadata_field': 'document_id', 'value': 'RCCI2150725307'}, {'entity': 'RCCI2150725307', 'metadata_field': 'document_path', 'value': 'idp/2025/7/15/1752614132.29904/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725307.pdf'}]}\nMetadatos relevantes: {'chunk_id': 'RCCI2150725307_chunk_3', 'chunk_position': 3, 'chunk_size': 949, 'ciudad': 'Cartagena', 'demandante': 'ALCALD\u00cdA DISTRITAL DE CARTAGENA DE INDIAS', 'demandante_normalized': 'alcaldia distrital de cartagena de indias', 'document_id': 'RCCI2150725307', 'document_path': 'idp/2025/7/15/1752614132.29904/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725307.pdf', 'end_token': 0, 'id': 225837, 'indexed_at': '2025-07-16T16:03:13.474393', 'start_token': 0, 'token_count': 148, 'total_chunks': 3}\nCoincidencias: {'document_numbers': [{'entity': 'RCCI2150725307', 'metadata_field': 'chunk_id', 'value': 'RCCI2150725307_chunk_3'}, {'entity': 'RCCI2150725307', 'metadata_field': 'document_id', 'value': 'RCCI2150725307'}, {'entity': 'RCCI2150725307', 'metadata_field': 'document_path', 'value': 'idp/2025/7/15/1752614132.29904/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725307.pdf'}]}",
+        "quality_score": 5,
+        "response_time": 3.479005813598633,
+        "success": true,
+        "has_source": true,
+        "search_results": 3,
+        "real_document": "RCCI2150725307"
+      },
+      {
+        "id": 19,
+        "question": "\u00bfCu\u00e1l es la situaci\u00f3n actual del proceso?",
+        "category": "resumen",
+        "type": "summary",
+        "response": "**Resumen de la situaci\u00f3n actual del proceso:**\n\nEl expediente contiene informaci\u00f3n sobre varios procesos administrativos y judiciales, principalmente relacionados con cobros coactivos y procesos ejecutivos. Se observa lo siguiente:\n\n*   **Levantamiento de Medidas Cautelares:** Se evidencia en varios documentos la orden de levantar medidas cautelares en diversos procesos, ya sea por pago de obligaciones tributarias (Impuesto de Industria y Comercio, entre otros) o por otras razones.\n*   **Terminaci\u00f3n de Procesos:** En algunos casos, se ordena la terminaci\u00f3n del proceso de cobro coactivo.\n*   **Notificaciones:** Se menciona que las notificaciones se realizar\u00e1n por correo electr\u00f3nico.\n*   **Procesos contra Contribuyentes:** Se identifican procesos contra diversos contribuyentes, incluyendo a MAR OSPINA DE HERNANDEZ, CLAUDIA SHIRLEY SARMIENTO GONZALEZ, MARIA LUISA REY ESCAMILLA, JOSE GREGORIO ARAGON VILLA y VICTOR EDUARDO RIVERA MORENO.\n*   **Entidades Involucradas:** Se mencionan entidades como el Instituto Departamental de Tr\u00e1nsito y Transporte del Meta, el Banco Davivienda, la Alcald\u00eda de Neiva y Banco FINANCIERA JURISCOOP.\n*   **Funcionarios:** Se identifica a LEIDY YISED S\u00c1NCHEZ CAICEDO como Funcionario Ejecutor de Cobro Coactivo.\n*   **Fechas:** Los documentos est\u00e1n fechados en julio de 2025 y 2024.\n\n\nFuente: RCCI2150725343, Chunk 2 de 2",
+        "quality_score": 5,
+        "response_time": 2.5966548919677734,
+        "success": true,
+        "has_source": true,
+        "search_results": 10,
+        "real_document": null
+      },
+      {
+        "id": 20,
+        "question": "\u00bfQu\u00e9 impacto tiene esta medida cautelar?",
+        "category": "resumen",
+        "type": "summary",
+        "response": "No se encuentra en el expediente proporcionado.\n\n\nFuente: unknown, Chunk 0 de 0",
+        "quality_score": 1,
+        "response_time": 0.37882518768310547,
+        "success": true,
+        "has_source": true,
+        "search_results": 0,
+        "real_document": null
+      }
+    ],
+    "summary": {
+      "successful_questions": 20,
+      "success_rate": 100.0,
+      "average_quality": 4.1,
+      "average_response_time": 1.3518374681472778,
+      "questions_with_source": 20,
+      "real_documents_tested": 5,
+      "quality_distribution": {
+        "excellent": 15,
+        "good": 0,
+        "acceptable": 4,
+        "poor": 1
+      }
+    }
+  },
+  "real_data_info": {
+    "total_available": 125,
+    "documents_used": 10,
+    "real_documents_tested": 5
+  }
+}

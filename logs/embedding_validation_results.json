@@ -1,0 +1,29 @@
+{
+  "semantic_similarity": {
+    "idp/2025/7/15/1752614131.584725/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725310.pdf": "0.39471534",
+    "idp/2025/7/15/1752614130.80476/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725309.pdf": "0.4979583",
+    "idp/2025/7/15/1752614132.29904/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725307.pdf": "0.4285645",
+    "idp/2025/7/15/1752614134.183112/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725299.pdf": "0.44314903",
+    "idp/2025/7/15/1752614138.650305/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725311.pdf": "0.365654"
+  },
+  "name_search": {
+    "idp/2025/7/15/1752614131.584725/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725310.pdf": "0.6791328",
+    "idp/2025/7/15/1752614130.80476/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725309.pdf": "0.500586",
+    "idp/2025/7/15/1752614132.29904/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725307.pdf": "0.7722873",
+    "idp/2025/7/15/1752614134.183112/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725299.pdf": "0.67375064",
+    "idp/2025/7/15/1752614138.650305/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725311.pdf": "0.44123268"
+  },
+  "legal_concepts": {
+    "idp/2025/7/15/1752614131.584725/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725310.pdf": "0.33996332",
+    "idp/2025/7/15/1752614130.80476/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725309.pdf": "0.42249537",
+    "idp/2025/7/15/1752614132.29904/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725307.pdf": "0.37482452",
+    "idp/2025/7/15/1752614134.183112/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725299.pdf": "0.34848863",
+    "idp/2025/7/15/1752614138.650305/app/DavExtraccion/PDFs/documents_20250715/Bogota2/RCCI2150725311.pdf": "0.34224653"
+  },
+  "metrics": {
+    "avg_semantic_similarity": "0.42600822",
+    "avg_name_search": "0.6133979",
+    "avg_legal_concepts": "0.3656037",
+    "overall_score": "0.46833658"
+  }
+}
