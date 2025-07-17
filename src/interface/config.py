@@ -8,7 +8,7 @@ específicas para abogados que procesan oficios jurídicos.
 
 import os
 from typing import Dict, Any
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 @dataclass
 class APIConfig:
@@ -55,9 +55,9 @@ class StyleConfig:
 @dataclass
 class AppConfig:
     """Configuración principal de la aplicación."""
-    api: APIConfig = APIConfig()
-    ui: UIConfig = UIConfig()
-    style: StyleConfig = StyleConfig()
+    api: APIConfig = field(default_factory=APIConfig)
+    ui: UIConfig = field(default_factory=UIConfig)
+    style: StyleConfig = field(default_factory=StyleConfig)
     
     # Configuraciones específicas para el dominio legal
     document_types: Dict[str, str] = None

@@ -198,7 +198,37 @@ El sistema se basa en los siguientes principios fundamentales:
 ### Requisitos del Sistema
 ```bash
 python 3.9+
+```
+
+### Instalación Completa
+```bash
+# Clonar el repositorio
+git clone <repository-url>
+cd keep-coding-final
+
+# Instalar dependencias
 pip install -r requirements.txt
+
+# Ejecutar el sistema completo (API + UI)
+python run_system.py
+```
+
+### URLs de Acceso
+- **Interfaz de Usuario**: http://localhost:8501
+- **API REST**: http://localhost:8001
+- **Documentación API**: http://localhost:8001/docs
+- **API ReDoc**: http://localhost:8001/redoc
+
+### Ejecutar Componentes Individuales
+
+#### Solo la API REST
+```bash
+uvicorn src.api.main:app --host 0.0.0.0 --port 8001 --reload
+```
+
+#### Solo la Interfaz de Usuario
+```bash
+streamlit run streamlit_app.py
 ```
 
 ### Configuración Inicial
@@ -240,6 +270,77 @@ python scripts/evaluate_queries.py
 # Iniciar API REST
 uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+## 🎨 Interfaz de Usuario Streamlit
+
+### Descripción
+El sistema incluye una interfaz de usuario moderna construida con **Streamlit**, diseñada específicamente para abogados que procesan oficios jurídicos en Colombia. La interfaz proporciona una experiencia intuitiva y eficiente para interactuar con el sistema RAG.
+
+### Características Principales
+
+#### 🏠 Página de Inicio
+- **Información del Sistema**: Estado de conexión y métricas básicas
+- **Descripción del Propósito**: Explicación clara del sistema RAG
+- **Casos de Uso Específicos**: Oficios de embargo, desembargo, sentencias
+- **Estadísticas Rápidas**: Métricas de rendimiento del sistema
+
+#### 🔍 Consultas Semánticas
+- **Consulta Individual**: Formulario para consultas en lenguaje natural
+- **Consultas en Lote**: Procesamiento eficiente de múltiples consultas
+- **Extracción de Entidades**: Identificación automática de personas, organizaciones, fechas
+- **Resultados Enriquecidos**: Información detallada con fuentes y confianza
+
+#### 📚 Gestión de Documentos
+- **Filtros Avanzados**: Por tipo de documento, tribunal, fechas
+- **Paginación**: Navegación eficiente a través de grandes volúmenes
+- **Tabla Interactiva**: Visualización clara de metadatos de documentos
+- **Búsqueda Específica**: Filtros específicos para el dominio legal
+
+#### 📊 Historial de Consultas
+- **Trazabilidad Completa**: Registro de todas las consultas realizadas
+- **Información Detallada**: Respuestas, entidades, fuentes utilizadas
+- **Paginación**: Navegación a través del historial
+- **Análisis de Patrones**: Identificación de consultas frecuentes
+
+#### ⚙️ Configuración del Sistema
+- **Estado del Sistema**: Monitoreo en tiempo real
+- **Configuración de API**: URLs, timeouts, parámetros
+- **Estadísticas Detalladas**: Métricas de rendimiento y uso
+- **Información Técnica**: Detalles de implementación
+
+### Casos de Uso Específicos
+
+#### Oficios de Embargo
+- **Identificación de Demandantes**: Extracción automática de información del demandante
+- **Identificación de Demandados**: Lista completa de personas embargadas
+- **Montos y Bienes**: Información detallada sobre embargos
+- **Tribunales Emisores**: Identificación de la autoridad judicial
+
+#### Oficios de Desembargo
+- **Búsqueda por Cédula**: Localización rápida por número de identificación
+- **Búsqueda por Expediente**: Consulta por número de expediente
+- **Historial de Procesos**: Seguimiento completo del caso
+- **Validación de Información**: Verificación de datos para desembargo
+
+### Arquitectura de la Interfaz
+
+```
+src/interface/
+├── __init__.py          # Inicialización del paquete
+├── config.py            # Configuración de la aplicación
+├── api_client.py        # Cliente para comunicarse con la API
+├── components.py        # Componentes reutilizables de UI
+├── pages.py            # Páginas específicas de cada módulo
+├── app.py              # Aplicación principal
+└── README.md           # Documentación específica
+```
+
+### Tecnologías de la Interfaz
+- **Streamlit**: Framework principal para la interfaz de usuario
+- **CSS Personalizado**: Estilos específicos para el dominio legal
+- **Pandas**: Manipulación y visualización de datos
+- **Requests**: Comunicación con la API REST
+- **Responsive Design**: Adaptable a diferentes tamaños de pantalla
 
 ## API REST con FastAPI
 
@@ -334,6 +435,14 @@ keep-coding-final/
 │   │   ├── routes/        # Endpoints de la API
 │   │   ├── models/        # Modelos Pydantic
 │   │   └── services/      # Servicios de la API
+│   ├── interface/         # Interfaz de usuario Streamlit
+│   │   ├── __init__.py    # Inicialización del paquete
+│   │   ├── config.py      # Configuración de la aplicación
+│   │   ├── api_client.py  # Cliente para comunicarse con la API
+│   │   ├── components.py  # Componentes reutilizables de UI
+│   │   ├── pages.py       # Páginas específicas de cada módulo
+│   │   ├── app.py         # Aplicación principal
+│   │   └── README.md      # Documentación específica
 │   ├── chunking/          # División adaptativa de documentos
 │   │   ├── document_chunker.py
 │   │   └── chunk_validator.py
@@ -353,6 +462,8 @@ keep-coding-final/
 │   ├── run_integration_tests.py
 │   ├── monitor_system.py
 │   └── interactive_query.py
+├── streamlit_app.py       # Aplicación principal de Streamlit
+├── run_system.py          # Script para ejecutar sistema completo
 ├── tests/                 # Tests unitarios e integración
 │   ├── unit/
 │   └── integration/

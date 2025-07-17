@@ -1,11 +1,11 @@
 """
-Módulo para indexación en ChromaDB con normalización de metadatos
+Módulo para indexación en ChromaDB con normalización universal de metadatos
 """
 import chromadb
 import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 import json
 import os
 from datetime import datetime
@@ -44,13 +44,103 @@ class ChromaIndexer:
             # Crear nueva colección
             collection = self.client.create_collection(
                 name=CHROMA_COLLECTION_NAME,
-                metadata={"description": "Documentos legales indexados"}
+                metadata={"description": "Documentos legales indexados con metadatos universales"}
             )
             self.logger.info(f"Nueva colección creada: {CHROMA_COLLECTION_NAME}")
             return collection
     
+    def _normalize_metadata_universal(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Normaliza TODOS los metadatos de forma universal y consistente.
+        Ahora primero aplana todos los metadatos recursivamente y luego normaliza los valores.
+        :param metadata: Metadatos a normalizar
+        :return: Metadatos normalizados universalmente
+        """
+        # 1. Aplanar todos los metadatos recursivamente
+        flat_metadata = self._extract_all_metadata_recursive(metadata)
+        normalized = {}
+        # 2. Normalizar nombres y valores
+        for key, value in flat_metadata.items():
+            if value is not None:
+                normalized_key = self._normalize_field_name(key)
+                normalized_value = self._normalize_value_by_type(value)
+                normalized[normalized_key] = normalized_value
+        # Añadir metadatos de indexación
+        normalized['indexed_at'] = datetime.now().isoformat()
+        normalized['indexing_version'] = 'universal_v2'
+        return normalized
+    
+    def _normalize_field_name(self, field_name: str) -> str:
+        """
+        Normaliza el nombre de un campo para consistencia.
+        Método privado que encapsula la lógica de normalización de nombres.
+        
+        :param field_name: Nombre del campo a normalizar
+        :return: Nombre normalizado
+        """
+        import unicodedata
+        import re
+        # Eliminar tildes primero
+        nfkd = unicodedata.normalize('NFKD', field_name)
+        no_tildes = ''.join([c for c in nfkd if not unicodedata.combining(c)])
+        # Insertar guiones bajos antes de mayúsculas (camelCase)
+        snake = re.sub(r'([a-z])([A-Z])', r'\1_\2', no_tildes)
+        # Convertir a minúsculas
+        snake = snake.lower()
+        # Reemplazar caracteres no alfanuméricos por guion bajo
+        snake = ''.join(c if c.isalnum() else '_' for c in snake)
+        # Remover múltiples guiones bajos
+        snake = re.sub(r'_+', '_', snake)
+        # Remover guiones bajos al inicio y final
+        snake = snake.strip('_')
+        return snake
+    
+    def _normalize_value_by_type(self, value: Any) -> Any:
+        """
+        Normaliza un valor según su tipo de datos.
+        Método privado que encapsula la lógica de normalización de valores.
+        
+        :param value: Valor a normalizar
+        :return: Valor normalizado
+        """
+        if isinstance(value, str):
+            return self._normalize_string_value(value)
+        elif isinstance(value, (int, float)):
+            return value
+        elif isinstance(value, bool):
+            return value
+        elif isinstance(value, (list, dict)):
+            return str(value)  # Convertir estructuras complejas a string
+        else:
+            return str(value)
+    
+    def _normalize_string_value(self, value: str) -> str:
+        """
+        Normaliza un valor string específicamente.
+        Método privado que encapsula la lógica de normalización de strings.
+        
+        :param value: String a normalizar
+        :return: String normalizado
+        """
+        if not value:
+            return ""
+        
+        # Normalizar texto (remover tildes, convertir a minúsculas)
+        normalized = normalize_text(value)
+        
+        # Limpiar espacios extra
+        normalized = ' '.join(normalized.split())
+        
+        return normalized
+    
     def _normalize_metadata(self, metadata: Dict) -> Dict:
-        """Normalizar metadatos para búsqueda consistente"""
+        """
+        Normalizar metadatos para búsqueda consistente (método legacy para compatibilidad).
+        Método privado que encapsula la lógica de normalización específica.
+        
+        :param metadata: Metadatos a normalizar
+        :return: Metadatos normalizados
+        """
         normalized = {}
         
         # Filtrar valores None y convertir a strings válidos
@@ -61,7 +151,7 @@ class ChromaIndexer:
                 else:
                     normalized[key] = str(value)
         
-        # Normalizar nombres
+        # Normalizar nombres específicos
         for key in ['demandante', 'demandado', 'entidad']:
             if key in normalized and normalized[key]:
                 normalized[f"{key}_normalized"] = normalize_text(str(normalized[key]))
@@ -101,7 +191,7 @@ class ChromaIndexer:
             raise
     
     def _prepare_chunks_for_indexing(self, chunks: List[Chunk]) -> Tuple[List[str], List[Dict], List[str]]:
-        """Preparar chunks para indexación en ChromaDB"""
+        """Preparar chunks para indexación en ChromaDB con normalización universal"""
         texts = []
         metadatas = []
         ids = []
@@ -110,8 +200,8 @@ class ChromaIndexer:
             # Texto del chunk
             texts.append(chunk.text)
             
-            # Metadatos normalizados
-            normalized_metadata = self._normalize_metadata(chunk.metadata)
+            # Metadatos normalizados universalmente
+            normalized_metadata = self._normalize_metadata_universal(chunk.metadata)
             metadatas.append(normalized_metadata)
             
             # ID único
@@ -121,7 +211,7 @@ class ChromaIndexer:
     
     def index_document(self, document_id: str, text: str, metadata: Dict) -> Dict[str, any]:
         """
-        Indexar un documento completo
+        Indexar un documento completo con normalización universal
         
         Args:
             document_id: ID único del documento
@@ -131,7 +221,7 @@ class ChromaIndexer:
         Returns:
             Resultado de la indexación
         """
-        self.logger.info(f"Iniciando indexación de documento: {document_id}")
+        self.logger.info(f"Iniciando indexación universal de documento: {document_id}")
         
         try:
             # Limpiar texto
@@ -147,7 +237,7 @@ class ChromaIndexer:
             # Validar chunks
             validation = self.chunker.validate_chunks(chunks)
             
-            # Preparar datos para indexación
+            # Preparar datos para indexación con normalización universal
             texts, metadatas, ids = self._prepare_chunks_for_indexing(chunks)
             
             # Generar embeddings
@@ -166,6 +256,7 @@ class ChromaIndexer:
                 "document_id": document_id,
                 "chunks_indexed": len(chunks),
                 "validation": validation,
+                "metadata_fields_indexed": len(metadatas[0]) if metadatas else 0,
                 "indexed_at": datetime.now().isoformat()
             }
             
@@ -178,7 +269,7 @@ class ChromaIndexer:
     
     def index_batch(self, documents: List[Dict]) -> Dict[str, any]:
         """
-        Indexar un lote de documentos
+        Indexar un lote de documentos con normalización universal
         
         Args:
             documents: Lista de documentos con {'id', 'text', 'metadata'}
@@ -186,7 +277,7 @@ class ChromaIndexer:
         Returns:
             Resultado del batch
         """
-        self.logger.info(f"Iniciando indexación de lote: {len(documents)} documentos")
+        self.logger.info(f"Iniciando indexación universal de lote: {len(documents)} documentos")
         
         results = []
         successful = 0
@@ -217,86 +308,139 @@ class ChromaIndexer:
         self.logger.info(f"Batch completado: {successful} exitosos, {failed} fallidos")
         return batch_result
     
+    def _repair_and_parse_json(self, json_str: str) -> Optional[Dict[str, Any]]:
+        """
+        Repara y parsea JSON mal formateado.
+        Método privado que encapsula la lógica de reparación de JSON.
+        
+        :param json_str: String JSON a reparar
+        :return: Diccionario parseado o None si falla
+        """
+        try:
+            # Intentar parseo directo
+            return json.loads(json_str)
+        except json.JSONDecodeError:
+            try:
+                # Intentar reparar JSON básico
+                repaired_json = self._basic_json_repair(json_str)
+                return json.loads(repaired_json)
+            except Exception as e:
+                self.logger.warning(f"Error reparando JSON: {e}")
+                return None
+    
+    def _basic_json_repair(self, json_str: str) -> str:
+        """
+        Reparación básica de JSON mal formateado.
+        Método privado que encapsula la lógica de reparación básica.
+        
+        :param json_str: String JSON a reparar
+        :return: String JSON reparado
+        """
+        # Reparaciones básicas comunes
+        repaired = json_str.strip()
+        
+        # Remover caracteres de control
+        repaired = ''.join(char for char in repaired if ord(char) >= 32 or char in '\n\r\t')
+        
+        # Corregir comillas mal escapadas
+        repaired = repaired.replace('\\"', '"').replace('""', '"')
+        
+        # Corregir comas finales antes de llaves de cierre
+        import re
+        repaired = re.sub(r',(\s*[}\]])', r'\1', repaired)
+        
+        # Corregir comas finales antes de llaves de apertura
+        repaired = re.sub(r',(\s*[{[])', r'\1', repaired)
+        
+        return repaired
+    
+    def _extract_all_metadata_recursive(self, json_data: Any, prefix: str = "") -> Dict[str, Any]:
+        """
+        Extrae recursivamente TODOS los metadatos de cualquier estructura JSON.
+        Método privado que encapsula la lógica de extracción recursiva.
+        Sigue SRP - solo extrae metadatos.
+        
+        :param json_data: Datos JSON a procesar
+        :param prefix: Prefijo para nombres de campos anidados
+        :return: Diccionario con todos los metadatos extraídos
+        """
+        metadata = {}
+        
+        if isinstance(json_data, dict):
+            for key, value in json_data.items():
+                normalized_key = self._normalize_field_name(key)
+                if prefix:
+                    normalized_key = f"{prefix}_{normalized_key}"
+                
+                if isinstance(value, (dict, list)):
+                    # Recursión para estructuras anidadas
+                    nested_metadata = self._extract_all_metadata_recursive(value, normalized_key)
+                    metadata.update(nested_metadata)
+                else:
+                    metadata[normalized_key] = value
+        elif isinstance(json_data, list):
+            for i, item in enumerate(json_data):
+                nested_metadata = self._extract_all_metadata_recursive(item, f"{prefix}_{i}")
+                metadata.update(nested_metadata)
+        
+        return metadata
+    
     def load_and_index_from_csv(self) -> Dict[str, any]:
         """
-        Cargar documentos desde CSV e indexarlos
+        Cargar documentos desde CSV e indexarlos con normalización universal y filtrado de campos relevantes
         """
-        self.logger.info("Iniciando carga desde CSV")
-        
+        self.logger.info("Iniciando carga universal desde CSV (solo campos relevantes <70% vacíos)")
+
+        # Lista de campos seleccionados para indexar (menos del 70% de vacíos)
+        campos_para_indexar = [
+            'id', 'document_id', 'json_path',
+            'demandante_NombreEmpresaDemandante', 'demandante_numeroIdentificacionDelDemandante',
+            'demandante_ciudadDelDemandante', 'demandados_0_nombreApellidosRazonSocial',
+            'demandante_tipoIdentificacionDelDemandante', 'demandados_0_identificacion',
+            'demandados_0_tipoIdentificacion', 'resolucionesRadicadosNumerosReferencias_0',
+            'entidad_actualizacionCuentaDepositoJudicial', 'entidad_esEntidadJudicial',
+            'entidad_TipoEntidadRemitente', 'entidad_ciudadEntidadRemitente',
+            'entidad_entidadRemitente', 'elDemandadoMencionaPorcentaje',
+            'elDemandadoTieneResponsabilidadSolidaria', 'elDemandadoTieneIncidenteDeDesacato',
+            'elDemandadoTieneReiteraciones', 'elDemandadoTieneSanciones',
+            'elDocumentoEnElTextoIncluyeLaPalabraCongelado', 'elDocumentoEnElTextoIncluyeLaPalabraDivorcio',
+            'elDocumentoEnElTextoIncluyeLaPalabraSeparacion', 'elDocumentoEnElTextoIncluyeLaPalabraProcesoDeAlimentos',
+            'elDocumentoEnElTextoIncluyeLaPalabraFamilia', 'esSolicitudDeInformacion',
+            'existeCorreoElectronicoDeSolicitud', 'amountInWordsDiffersFromNumericValue',
+            'existeNuevaCuantia', 'elDocumentoCumpleConLasReglasDeIdentificacionRemanente',
+            'isDaviviendaThePayer', 'esMencionadoEnElDocumentoComoEmpleadoOTrabajador',
+            'estaFirmadoElDocumento', 'firmaManuscrita', 'esJuzgadoElRemitente',
+            'afectaAlgunCDT', 'afectarLaCuentaDeNominaDelDemandado', 'tipoMedidaCautelar',
+            'elDocumentoEsUnCorreoElectronico', 'esActualizacionDeEmbargo',
+            'elDocumentoIncluyeSolicitudProductoDeudores', 'elUnicoProductoFinancierEnElDocumentoEsDerechosEconomicos',
+            'enElDocumentoSoloMencionaElProductoCanonArrendamiento', 'entidad_enElDocumentoSeMencionaAlgunaActualizacionEnElCorreo',
+            'cuantosOficiosDiferentesHayEnElDocumento', 'firmaElectronica', 'destinatariosOficio_0',
+            'EstructuraDocumento_header_rangoPaginas', 'entidad_correoElectronicoEntidadRemitente'
+        ]
+
         try:
-            # Cargar metadatos
+            # Cargar metadatos desde el nuevo CSV aplanado
             df = pd.read_csv(CSV_METADATA_PATH)
             self.logger.info(f"CSV cargado: {len(df)} documentos")
-            
+
             documents_to_index = []
-            
+
             for _, row in df.iterrows():
-                # Extraer ID del documento desde la nueva estructura del CSV
                 document_id = row['document_id']
                 document_path = row['json_path']
-                
-                # Crear metadatos básicos
-                metadata = {
-                    'document_id': document_id,
-                    'document_path': document_path,
-                    'id': row['id']
-                }
-                
-                # Parsear respuesta JSON si existe
-                if 'metadata' in row and pd.notna(row['metadata']):
-                    try:
-                        response_data = json.loads(row['metadata'])
-                        if isinstance(response_data, list):
-                            # Si es una lista, tomar el primer elemento
-                            response_data = response_data[0] if response_data else {}
-                        
-                        # Extraer información del demandante
-                        if 'demandante' in response_data:
-                            demandante = response_data['demandante']
-                            if demandante:
-                                # Nombres y apellidos
-                                nombres = demandante.get('nombresPersonaDemandante', '')
-                                apellidos = demandante.get('apellidosPersonaDemandante', '')
-                                nombre_empresa = demandante.get('NombreEmpresaDemandante', '')
-                                
-                                if nombres and apellidos:
-                                    metadata['demandante'] = f"{nombres} {apellidos}".strip()
-                                elif nombre_empresa:
-                                    metadata['demandante'] = nombre_empresa
-                                else:
-                                    metadata['demandante'] = 'No especificado'
-                                
-                                # Información adicional
-                                metadata['tipo_identificacion'] = demandante.get('tipoIdentificacionDelDemandante', '')
-                                metadata['numero_identificacion'] = demandante.get('numeroIdentificacionDelDemandante', '')
-                                metadata['ciudad'] = demandante.get('ciudadDelDemandante', '')
-                                metadata['departamento'] = demandante.get('DepartamentoDelDemandante', '')
-                                metadata['correo'] = demandante.get('correoElectronicoDelDemandante', '')
-                                metadata['direccion'] = demandante.get('direccionFisicaDelDemandante', '')
-                                metadata['telefono'] = demandante.get('telefonoDelDemandante', '')
-                        
-                        # Extraer resoluciones si existen
-                        if 'resolucionesRadicadosNumerosReferencias' in response_data:
-                            metadata['resoluciones'] = response_data['resolucionesRadicadosNumerosReferencias']
-                        
-                        # Tipo de entidad
-                        if 'TipoEntidadRemitente' in response_data:
-                            metadata['tipo_entidad'] = response_data['TipoEntidadRemitente']
-                            
-                    except json.JSONDecodeError as e:
-                        self.logger.warning(f"Error parseando JSON para documento {document_id}: {e}")
-                
+                metadata = {k: row[k] for k in df.columns if k in campos_para_indexar and pd.notna(row[k]) and row[k] != ''}
+                # Asegurar que los campos clave estén presentes
+                metadata['document_id'] = document_id
+                metadata['document_path'] = document_path
+                metadata['id'] = row['id']
+
                 # Cargar contenido JSON
                 json_path = os.path.join(JSON_DOCS_PATH, f"{document_id}.pdf", "output.json")
-                
                 if os.path.exists(json_path):
                     with open(json_path, 'r', encoding='utf-8') as f:
                         content = json.load(f)
-                        
-                        # Extraer texto de todos los elementos del array 'texts'
                         texts_array = content.get('texts', [])
                         full_text = '\n'.join([t.get('text', '') for t in texts_array if t.get('text')])
-                    
                     documents_to_index.append({
                         'id': document_id,
                         'text': full_text,
@@ -304,40 +448,18 @@ class ChromaIndexer:
                     })
                 else:
                     self.logger.warning(f"Archivo JSON no encontrado: {json_path}")
-            
+
             # Indexar documentos
             result = self.index_batch(documents_to_index)
-            
+            self.logger.info(f"Indexación universal completada: {result['successful']} exitosos, {result['failed']} fallidos")
             return result
-            
         except Exception as e:
-            self.logger.error(f"Error cargando desde CSV: {e}")
+            self.logger.error(f"Error en indexación universal: {e}")
             return {"success": False, "error": str(e)}
     
-    def get_collection_stats(self) -> Dict[str, any]:
-        """Obtener estadísticas de la colección"""
-        try:
-            count = self.collection.count()
-            
-            # Obtener muestra de metadatos para análisis
-            sample = self.collection.get(limit=10)
-            
-            stats = {
-                "total_chunks": count,
-                "collection_name": CHROMA_COLLECTION_NAME,
-                "sample_metadata_keys": list(sample['metadatas'][0].keys()) if sample['metadatas'] else [],
-                "last_updated": datetime.now().isoformat()
-            }
-            
-            return stats
-            
-        except Exception as e:
-            self.logger.error(f"Error obteniendo estadísticas: {e}")
-            return {"error": str(e)}
-    
-    def search_similar(self, query: str, n_results: int = 10, where: Dict = None) -> Dict[str, any]:
+    def search_similar(self, query: str, n_results: int = 10, where: Optional[Dict] = None) -> Dict[str, any]:
         """
-        Buscar chunks similares
+        Buscar documentos similares con soporte para metadatos universales
         
         Args:
             query: Consulta de búsqueda
@@ -361,9 +483,27 @@ class ChromaIndexer:
             return {
                 "query": query,
                 "results": results,
-                "total_found": len(results['ids'][0]) if results['ids'] else 0
+                "total_results": len(results.get('ids', [[]])[0]) if results.get('ids') else 0
             }
             
         except Exception as e:
             self.logger.error(f"Error en búsqueda: {e}")
-            return {"error": str(e), "query": query} 
+            return {"error": str(e)}
+    
+    def get_collection_stats(self) -> Dict[str, any]:
+        """
+        Obtener estadísticas de la colección
+        
+        Returns:
+            Estadísticas de la colección
+        """
+        try:
+            count = self.collection.count()
+            return {
+                "collection_name": CHROMA_COLLECTION_NAME,
+                "total_chunks": count,
+                "indexing_version": "universal_v2"
+            }
+        except Exception as e:
+            self.logger.error(f"Error obteniendo estadísticas: {e}")
+            return {"error": str(e)} 
