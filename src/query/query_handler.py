@@ -219,20 +219,24 @@ Respuesta:
             logger.info(f"Entidades extraídas: {entities}")
             logger.info(f"Filtros extraídos: {filters}")
 
-            # Solo usar filtros para casos estructurados (fechas, cuantías, tipo_medida, números de expediente)
+            # Solo usar filtros para casos muy específicos (fechas, cuantías, números de expediente)
+            # NO usar filtros para términos generales como "embargo", "medida cautelar", etc.
             chromadb_filters = self._convert_filters_to_chromadb_format(filters)
             use_filters = False
+            
             if chromadb_filters:
-                useful_filters = ['tipo_medida', 'fecha_normalized', 'cuantia_normalized', 'document_id']
-                # Solo usar filtros si contienen información útil y no nombres
-                if any(key in chromadb_filters for key in useful_filters):
-                    # Excluir filtros de nombres que no son útiles para ChromaDB
+                # Solo usar filtros muy específicos, no términos generales
+                specific_filters = ['fecha_normalized', 'cuantia_normalized', 'document_id']
+                if any(key in chromadb_filters for key in specific_filters):
+                    # Excluir filtros de nombres y términos generales
                     if 'demandante_normalized' in chromadb_filters:
                         del chromadb_filters['demandante_normalized']
-                    if chromadb_filters:  # Solo usar si quedan filtros útiles
+                    if 'tipo_medida' in chromadb_filters:
+                        del chromadb_filters['tipo_medida']
+                    if chromadb_filters:  # Solo usar si quedan filtros específicos
                         use_filters = True
 
-            # Búsqueda SIEMPRE semántica (sin filtro para nombres, empresas, etc.)
+            # Búsqueda SIEMPRE semántica sin filtros restrictivos
             search_results = self.indexer.search_similar(
                 query=query,
                 n_results=n_results,
